@@ -1,13 +1,15 @@
 import React from 'react';
-import { Layout } from 'antd';
+import { ConfigProvider } from 'antd';
+import locale from 'antd/es/locale/zh_CN';
 import './index.less'
 import { observer } from 'mobx-react';
+import Calendar from './pages/calendar'
 
 function App() {
   return <>
-    <Layout className="layout">
-      hello world react
-    </Layout>
+    <ConfigProvider locale={locale}>
+      <Calendar />
+    </ConfigProvider>
   </>
 }
 

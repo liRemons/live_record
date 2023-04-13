@@ -6,7 +6,6 @@ const setExternals = (isEnvProduction) => {
     'antd/dist/antd.css': 'antd',
     mobx: 'mobx',
     'mobx-react': 'mobxReact',
-    classnames: 'classNames',
     axios: 'axios',
     qs: 'Qs',
   } : {};
