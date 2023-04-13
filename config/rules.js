@@ -116,23 +116,10 @@ const rules = ({ isEnvDevelopment }) => [
       },
       // Other resources
       {
-        test: /\.(pdf|doc|node|svg)$/,
+        test: /\.(pdf|doc|node|svg|woff2)$/,
         use: [
           {
             loader: 'file-loader',
-            options: {
-              outputPath: (url, resourcePath) => {
-                console.log(resourcePath)
-                return `${
-                  (resourcePath || '')
-                    .replace(/\//g, '_')
-                    .replace(/\\/g, '_')
-                    .split('apps')[1]
-                    .split('_')
-                    .filter((_) => !!_)[0]
-                }/assets/file/${url}`
-              },
-            },
           },
         ],
       },
