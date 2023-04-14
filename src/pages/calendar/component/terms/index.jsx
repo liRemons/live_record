@@ -89,7 +89,7 @@ const termsMap = {
   '小满': {
     key: 'theBeginningOfSummer',
     content: '小满十日遍地黄',
-    icon: theBeginningOfSummer
+    icon: lesserFullnessOfGrain
   },
   '芒种': {
     key: 'grainInBeard',
