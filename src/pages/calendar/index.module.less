@@ -6,7 +6,7 @@
 // #b11d1d
 
 .container {
-  width: 580px;
+  max-width: 580px;
   padding: 10px;
   margin: 20px;
   overflow: hidden;
@@ -85,7 +85,7 @@
 
   .row {
     display: flex;
-    
+    justify-content: space-around;
     .day,
     .week {
       position: relative;
@@ -105,6 +105,7 @@
       
 
       .IDayCn {
+        position: relative;
         font-size: 12px;
         font-weight: normal;
       }
@@ -120,14 +121,16 @@
       
     }
 
-    // .day::before {
+    // .IDayCn::before {
     //   content: '';
     //   width: 4px;
     //   height: 4px;
-    //   background: #1890ff;
+    //   background: #ff9718;
     //   border-radius: 50%;
     //   position: absolute;
-    //   bottom: 4px;
+    //   top: -3px;
+    //   left: 50%;
+    //   margin-left: -2px;
     // }
 
     .week {
@@ -148,6 +151,21 @@
       }
     }
   }
+}
+
+@media screen and (max-width: 600px) {
+  .container  {
+    .row {
+      .day,
+      .week  {
+        width: 40px;
+        height: 40px;
+        margin: 10px 0;
+        line-height: 16px;
+      }
+    }
+  }
+  
 }
 
 
