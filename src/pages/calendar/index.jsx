@@ -13,6 +13,7 @@ import dayjs from 'dayjs';
 import { arrGroup } from 'methods-r';
 import style from './index.module.less';
 import classNames from 'classnames';
+import Terms from './components/terms';
 import { LeftOutlined, RightOutlined, SendOutlined } from '@ant-design/icons';
 
 function View() {
@@ -164,6 +165,7 @@ function View() {
         }
       </div>)
     }
+    <Terms term={getCNDate().Term} />
     <div className={style.handle}>
       {compareNow ? <Button size="large" type="primary" shape="circle" onClick={toNow}>今</Button> : null}
       <Button size="large" type="primary" shape="circle" onClick={() => setVisible(true)}><SendOutlined /></Button>
