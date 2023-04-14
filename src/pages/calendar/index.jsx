@@ -13,7 +13,7 @@ import dayjs from 'dayjs';
 import { arrGroup } from 'methods-r';
 import style from './index.module.less';
 import classNames from 'classnames';
-import Terms from './components/terms';
+import Terms from './component/terms';
 import { LeftOutlined, RightOutlined, SendOutlined } from '@ant-design/icons';
 
 function View() {
