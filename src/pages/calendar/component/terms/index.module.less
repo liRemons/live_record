@@ -1,0 +1,46 @@
+.terms {
+  width: 100%;
+  padding: 10px;
+  box-shadow: 5px 5px 20px #fff, 5px 5px 20px #babecc;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  img {
+    width: 100px;
+  }
+
+  .title {
+    font-family: alibaba;
+    font-size: 50px;
+    margin: 0 20px;
+  }
+
+  .content {
+    font-family: alibaba;
+    display: flex;
+    font-size: 18px;
+    flex-direction: column;
+    color: #999;
+    font-weight: normal;
+    letter-spacing: 4px;
+  }
+}
+
+@media screen and (max-width: 600px) {
+  .terms {
+    img {
+      width: 90px;
+    }
+    .title {
+      font-family: alibaba;
+      font-size: 40px;
+      margin: 0 10px;
+    }
+
+    .content {
+      font-size: 16px;
+    }
+
+  }
+}
