@@ -112,7 +112,7 @@ const getConfig = ({
       compress: true,
       host: 'local-ip',
       allowedHosts: 'auto',
-      open: true,
+      // open: true,
       hot: true,
       client: {
         progress: true,
