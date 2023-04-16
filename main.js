@@ -2,7 +2,7 @@
  * @Author: liRemons remons@foxmail.com
  * @Date: 2023-04-14 21:10:50
  * @LastEditors: liRemons remons@foxmail.com
- * @LastEditTime: 2023-04-16 00:15:41
+ * @LastEditTime: 2023-04-16 10:25:18
  * @FilePath: \project\electron_test\mian.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -31,7 +31,7 @@ const createWindow = () => {
   });
 
   // 加载 index.html
-  mainWindow.loadURL('http://192.168.28.208:8080/index.html');
+  mainWindow.loadURL('dist/index.html');
 
   mainWindow.on('ready-to-show', function () {
     mainWindow.show();
@@ -83,7 +83,7 @@ app.whenReady().then(() => {
   });
 
   ipcMain.handle('upload', (event, { path: filepath, name }) => {
-    fs.copy(filepath, path.resolve(__dirname, `./usr_upload/record/username/${name}`), err => {
+    fs.copy(filepath, path.resolve(__dirname, `./usr_config/upload/username/${name}`), err => {
       log(err)
     })
   });
