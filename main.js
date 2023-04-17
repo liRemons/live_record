@@ -2,7 +2,7 @@
  * @Author: liRemons remons@foxmail.com
  * @Date: 2023-04-14 21:10:50
  * @LastEditors: liRemons remons@foxmail.com
- * @LastEditTime: 2023-04-16 10:25:18
+ * @LastEditTime: 2023-04-17 22:16:10
  * @FilePath: \project\electron_test\mian.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -27,11 +27,13 @@ const createWindow = () => {
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: true,
+      webSecurity: false
     },
   });
 
   // 加载 index.html
-  mainWindow.loadURL('dist/index.html');
+  mainWindow.loadURL(' http://192.168.28.208:8080/');
+  // mainWindow.loadFile('dist/index.html');
 
   mainWindow.on('ready-to-show', function () {
     mainWindow.show();
