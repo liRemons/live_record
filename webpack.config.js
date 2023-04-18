@@ -110,9 +110,7 @@ const getConfig = ({
         directory: path.resolve(__dirname, 'dist'),
       },
       compress: true,
-      host: 'local-ip',
       allowedHosts: 'auto',
-      // open: true,
       hot: true,
       client: {
         progress: true,

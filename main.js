@@ -2,7 +2,7 @@
  * @Author: liRemons remons@foxmail.com
  * @Date: 2023-04-14 21:10:50
  * @LastEditors: liRemons remons@foxmail.com
- * @LastEditTime: 2023-04-17 22:16:10
+ * @LastEditTime: 2023-04-18 22:52:48
  * @FilePath: \project\electron_test\mian.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -11,8 +11,10 @@
 
 // electron 模块可以用来控制应用的生命周期和创建原生浏览窗口
 const path = require('path');
-
-const fs = require('fs-extra')
+const electronConfig = require('./electron.config.json');
+const fs = require('fs-extra');
+const { parseContext } = require('./utils');
+const dayjs = require('dayjs');
 
 const { app, BrowserWindow, Menu, ipcMain } = require('electron');
 
@@ -32,7 +34,7 @@ const createWindow = () => {
   });
 
   // 加载 index.html
-  mainWindow.loadURL(' http://192.168.28.208:8080/');
+  mainWindow.loadURL(' http://localhost:8080/');
   // mainWindow.loadFile('dist/index.html');
 
   mainWindow.on('ready-to-show', function () {
@@ -84,10 +86,17 @@ app.whenReady().then(() => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
 
-  ipcMain.handle('upload', (event, { path: filepath, name }) => {
-    fs.copy(filepath, path.resolve(__dirname, `./usr_config/upload/username/${name}`), err => {
-      log(err)
-    })
+  ipcMain.handle('upload', async (event, { path: filepath, name, uid, type }) => {
+    const uploadPath = parseContext(electronConfig.upload_path, { username: 'admin', date: dayjs(dayjs().format('YYYY-MM-DD')).valueOf() });
+    const copyPath = path.resolve(__dirname, `${uploadPath}${name}`)
+    await fs.copySync(filepath, copyPath);
+    return {
+      url: copyPath,
+      status: 'done',
+      name,
+      uid,
+      type
+    }
   });
 });
 

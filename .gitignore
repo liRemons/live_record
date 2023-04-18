@@ -38,7 +38,7 @@ build/Release
 node_modules/
 jspm_packages/
 dist/
-usr_config/
+usr/
 out/
 
 # TypeScript v1 declaration files
