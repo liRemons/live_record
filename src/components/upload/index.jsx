@@ -3,6 +3,7 @@ import { Upload } from 'antd';
 import { InboxOutlined } from '@ant-design/icons';
 import { uploadFile } from '../../../utils/renderer';
 import { mimeTypeMap, previewMap } from './const';
+import cloneDeep from 'lodash.clonedeep';
 import style from './index.module.less';
 const { Dragger } = Upload;
 function View() {
@@ -11,7 +12,6 @@ function View() {
   const props = {
     name: 'file',
     customRequest: async (e) => {
-      console.log(e);
       const { file, file: { path, name, size, type, uid }, onSuccess } = e;
       if (size > 1000 * 1000 * 50) {
         return
@@ -32,6 +32,18 @@ function View() {
     itemRender: () => { }
   };
 
+
+  const onPreview = (uid, url, name) => {
+
+  };
+
+  const onRemove = ({ uid, url, name }) => {
+    const newFileList = cloneDeep(fileList)
+    const findIndex = newFileList.findIndex((item) => item.uid === uid);
+    newFileList.splice(findIndex, 1);
+    setFileList([...newFileList]);
+  };
+
   return <>
     <Dragger multiple {...props}>
       <p className="ant-upload-drag-icon">
@@ -44,7 +56,7 @@ function View() {
     </Dragger>
     <div className={style.preview}>
       {
-        fileList.map(item => previewMap(item))
+        fileList.map(item => previewMap({ ...item, onPreview, onRemove }))
       }
     </div>
   </>

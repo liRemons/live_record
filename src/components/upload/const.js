@@ -1,7 +1,7 @@
 import React from 'react';
-import { Image } from 'antd';
 import errSvg from '../../assets/svg/文件.svg';
-import style from './index.module.less'
+import style from './index.module.less';
+import { DeleteOutlined, EyeOutlined } from '@ant-design/icons';
 
 export const mimeTypeMap = new Map([
   ['text/css', 'text'],
@@ -31,31 +31,40 @@ export const mimeTypeMap = new Map([
 const draw = async ({ text, id }) => {
   const c = document.getElementById(id);
   if (!c) {
-    return null
+    return null;
   }
-  const ctx = c.getContext("2d");
-  ctx.font = "48px alibaba"
+  const ctx = c.getContext('2d');
+  ctx.font = '48px alimama';
   await document.fonts.load(ctx.font);
   ctx.textAlign = 'center';
-  ctx.textBaseline = "middle";
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = '#999';
   ctx.fillText(`.${text}`, 100, 100);
-}
+};
 
-export const previewMap = ({ type, url, name }) => {
+export const previewMap = (data) => {
+  const { type, url, uid = '', name, onPreview, onRemove } = data;
   const src = `file://${url}`;
 
-  const createIframe = (src) => <iframe frameBorder={0} src={src} />
+  const createIframe = (src) => (
+    <iframe scrolling='no' frameBorder={0} src={src} />
+  );
   const transNode = (children) => {
-    return <div className={style.previewBox}>
-      <div className={style.previewContainer}>
-        <div className={style.mark}></div>
-        <div className={style.src}>
-          {children}
+    return (
+      <div key={uid} className={style.previewBox}>
+        <div className={style.previewContainer}>
+          <div className={style.mark}>
+            <span className={style.handle}>
+              <EyeOutlined onClick={() => onPreview(data)} /> 
+              <DeleteOutlined onClick={() => onRemove(data)} />
+            </span>
+          </div>
+          <div className={style.src}>{children}</div>
         </div>
+        <div className={style.filename}>{name}</div>
       </div>
-      <div className={style.filename}>{name}</div>
-    </div>
-  }
+    );
+  };
 
   const obj = {
     text: transNode(createIframe(src)),
@@ -63,27 +72,26 @@ export const previewMap = ({ type, url, name }) => {
     video: transNode(createIframe(src)),
     ppt: transNode(createIframe(src)),
     pdf: transNode(createIframe(src)),
-    image: (
-      transNode(<img src={src} />)
-    ),
-  }
+    image: transNode(<img src={src} />),
+  };
 
   if (!obj[type]) {
-    const id = `canvas${name}`;
+    const id = `canvas${uid}`;
     const text = url.split('.').length >= 2 ? url.split('.').slice(-1)[0] : '';
     if (!text) {
-      return transNode(<img
-        style={{ width: '50px', height: '50px' }}
-        src={errSvg}
-      />)
+      return transNode(
+        <img style={{ width: '50px', height: '50px' }} src={errSvg} />
+      );
     }
     setTimeout(() => {
       draw({
-        text: url.split('.').slice(-1)[0], name, id
-      })
-    }, 200)
-    return transNode(<canvas width={200} height={200} id={id} />)
+        text: url.split('.').slice(-1)[0],
+        name,
+        id,
+      });
+    }, 200);
+    return transNode(<canvas width={200} height={200} id={id} />);
   } else {
-    return obj[type]
+    return obj[type];
   }
 };

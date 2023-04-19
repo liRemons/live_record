@@ -5,12 +5,19 @@ import './index.less'
 import { observer } from 'mobx-react';
 import Calendar from './components/calendar';
 import Upload from './components/upload/index'
+import Editor from './components/editor/index'
 
 function App() {
+
+
+  const changeDate = (date) => {
+    console.log(date);
+  }
   return <>
     <ConfigProvider locale={locale}>
-      <Calendar />
+      <Calendar onChange={changeDate} />
       <Upload />
+      <Editor />
     </ConfigProvider>
   </>
 }

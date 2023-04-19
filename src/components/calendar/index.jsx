@@ -16,7 +16,7 @@ import classNames from 'classnames';
 import Terms from './component/terms';
 import { LeftOutlined, RightOutlined, SendOutlined } from '@ant-design/icons';
 
-function View() {
+function View(props) {
   const [month, setMonth] = useState(dayjs().month() + 1);
   const [year, setYear] = useState(dayjs().year());
   const [data, setData] = useState([]);
@@ -32,6 +32,11 @@ function View() {
     }
     setJumpInfo({ year, month })
   }, [year, month]);
+
+  useEffect(() => {
+    props.onChange && props.onChange(activeDate)
+  }, [activeDate])
+
   const getData = (year = dayjs().year(), month = dayjs().month() + 1) => {
     const now = dayjs().year(year).month(month - 1);
     const nowMonthDay = now.daysInMonth(); // 当前月有多少天
