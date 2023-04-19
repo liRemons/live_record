@@ -1,14 +1,12 @@
 import React, { useState } from 'react';
-import { Upload, Image } from 'antd';
+import { Upload } from 'antd';
 import { InboxOutlined } from '@ant-design/icons';
 import { uploadFile } from '../../../utils/renderer';
 import { mimeTypeMap, previewMap } from './const';
-
+import style from './index.module.less';
 const { Dragger } = Upload;
-const arr = []
 function View() {
   const [fileList, setFileList] = useState([]);
-
 
   const props = {
     name: 'file',
@@ -44,9 +42,12 @@ function View() {
         支持单个或批量上传
       </p>
     </Dragger>
-    {
-      fileList.map(item => previewMap(item.type, item.url))
-    }
+    <div className={style.preview}>
+      {
+        fileList.map(item => previewMap(item))
+      }
+    </div>
+    <canvas id="canvas-1" width="400" height="500"></canvas>
   </>
 }
 
