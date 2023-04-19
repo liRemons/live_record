@@ -1,9 +1,16 @@
 import React from 'react';
 import { Image } from 'antd';
 import errSvg from '../../assets/svg/文件.svg';
+import transSvg from '../../assets/svg/透明.svg';
+import style from './index.module.less'
 
 export const mimeTypeMap = new Map([
-  ['text', 'text'],
+  ['text/css', 'text'],
+  ['text/html', 'text'],
+  ['text/calendar', 'text'],
+  ['text/javascript', 'text'],
+  ['text/plain', 'text'],
+  ['text/xml', 'text'],
   ['image', 'image'],
   ['audio', 'audio'],
   ['video', 'video'],
@@ -22,30 +29,62 @@ export const mimeTypeMap = new Map([
   ['application/pdf', 'pdf'],
 ]);
 
-export const previewMap = (type, url) => {
+const draw = async ({ text, id }) => {
+  const c = document.getElementById(id);
+  if (!c) {
+    return null
+  }
+  const ctx = c.getContext("2d");
+  ctx.font = "48px alibaba"
+  await document.fonts.load(ctx.font);
+  ctx.textAlign = 'center';
+  ctx.textBaseline = "middle";
+  ctx.fillText(`.${text}`, 100, 100);
+}
+
+export const previewMap = ({ type, url, name }) => {
   const src = `file://${url}`;
-  return (
-    {
-      text: <iframe width={200} height={200} src={src} />,
-      audio: <iframe width={200} height={200} src={src} />,
-      video: <iframe width={200} height={200} src={src} />,
-      ppt: <iframe width={200} height={200} src={src} />,
-      pdf: <iframe width={200} height={200} src={src} />,
-      image: (
-        <Image
-          width={200}
-          height={200}
-          style={{ objectFit: 'contain' }}
-          src={src}
-        />
-      ),
-    }[type] || (
-      <Image
-        width={200}
-        height={200}
-        src='error'
-        fallback={errSvg}
-      />
-    )
-  );
+
+  const createIframe = (src) => <iframe frameBorder={0} src={src} />
+  const transNode = (children) => {
+    return <div className={style.previewBox}>
+      <div className={style.previewContainer}>
+        <div className={style.mark}></div>
+        <div className={style.src}>
+          {children}
+        </div>
+      </div>
+      <div className={style.filename}>{name}</div>
+    </div>
+  }
+
+  const obj = {
+    text: transNode(createIframe(src)),
+    audio: transNode(createIframe(src)),
+    video: transNode(createIframe(src)),
+    ppt: transNode(createIframe(src)),
+    pdf: transNode(createIframe(src)),
+    image: (
+      transNode(<img src={src} />)
+    ),
+  }
+
+  if (!obj[type]) {
+    const id = `canvas${name}`;
+    const text = url.split('.').length >= 2 ? url.split('.').slice(-1)[0] : '';
+    if (!text) {
+      return transNode(<img
+        style={{ width: '50px', height: '50px' }}
+        src={errSvg}
+      />)
+    }
+    setTimeout(() => {
+      draw({
+        text: url.split('.').slice(-1)[0], name, id
+      })
+    }, 200)
+    return transNode(<canvas width={200} height={200} id={id} />)
+  } else {
+    return obj[type]
+  }
 };
