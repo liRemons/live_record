@@ -1,7 +1,6 @@
 import React from 'react';
 import { Image } from 'antd';
 import errSvg from '../../assets/svg/文件.svg';
-import transSvg from '../../assets/svg/透明.svg';
 import style from './index.module.less'
 
 export const mimeTypeMap = new Map([
