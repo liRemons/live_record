@@ -1,0 +1,69 @@
+.previewBox {
+  width: 200px;
+  border: 1px dashed rgb(47, 144, 255);
+  border-radius: 6px;
+  margin: 10px 20px 0 0;
+  flex-grow: 0;
+  flex-shrink: 0;
+
+  .filename {
+    line-height: 24px;
+    bottom: 0;
+    padding: 0 4px;
+    height: 24px;
+    font-size: 12px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+}
+
+.previewContainer {
+  position: relative;
+  height: 200px;
+  border-bottom: 1px dashed #ccc;
+  border-radius: 4px;
+ 
+  padding-bottom: 0;
+  cursor: pointer;
+
+  .src {
+    border-radius: 6px;
+    overflow: hidden;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+
+    img {
+      display: inline-block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    iframe {
+      width: 100%;
+    }
+  }
+
+  .mark {
+    width: 100%;
+    border-radius: 5px;
+    height: 100%;
+    position: absolute;
+    background: rgba(0, 0, 0, 0);
+    top: 0;
+    left: 0;
+  }
+
+  &:hover .mark {
+    transition: all .5s;
+    background: rgba(0, 0, 0, .2);
+  }
+}
+
+.preview {
+  display: flex;
+  flex-wrap: wrap;
+}
