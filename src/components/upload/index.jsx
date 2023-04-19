@@ -47,7 +47,6 @@ function View() {
         fileList.map(item => previewMap(item))
       }
     </div>
-    <canvas id="canvas-1" width="400" height="500"></canvas>
   </>
 }
 
