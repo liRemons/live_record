@@ -1,16 +1,45 @@
 import React, { useState } from 'react';
-import { Upload } from 'antd';
+import { Upload, Image, Modal } from 'antd';
 import { InboxOutlined } from '@ant-design/icons';
 import { uploadFile } from '../../../utils/renderer';
 import { mimeTypeMap, previewMap } from './const';
-import cloneDeep from 'lodash.clonedeep';
 import style from './index.module.less';
+
 const { Dragger } = Upload;
 function View() {
   const [fileList, setFileList] = useState([]);
+  const [previewSrc, setPreviewSrc] = useState(null);
+  const [previewImgVisible, setPreviewImgVisible] = useState(false);
+  const [previewModalVisible, setPreviewModalVisible] = useState(false);
+  const [previewTitle, setPreviewTitle] = useState(null);
+
+
+  const onPreview = (data) => {
+    const { type, url, name } = data;
+    const src = `file://${url}`;
+    setPreviewTitle(name);
+    setPreviewSrc(src);
+    const handleImg = () => {
+      setPreviewImgVisible(true);
+    }
+
+    const openDialog = () => {
+      setPreviewModalVisible(true);
+    }
+    const handles = {
+      image: handleImg,
+      pdf: openDialog,
+      video: openDialog
+    }
+
+    if (handles[type]) {
+      handles[type]()
+    }
+  }
 
   const props = {
     name: 'file',
+    fileList,
     customRequest: async (e) => {
       const { file, file: { path, name, size, type, uid }, onSuccess } = e;
       if (size > 1000 * 1000 * 50) {
@@ -21,27 +50,21 @@ function View() {
         name,
         size,
         type: mimeTypeMap.get(type) || mimeTypeMap.get(type.split('/')[0]) || 'file',
-        uid
+        uid,
+        status: 'done',
       });
       onSuccess(res, file)
     },
 
-    onChange: (e) => {
-      setFileList(e.fileList.filter(item => item.status === 'done').map(item => item.response));
+    onChange: ({ fileList }) => {
+      setFileList([...fileList])
     },
-    itemRender: () => { }
-  };
-
-
-  const onPreview = (uid, url, name) => {
-
-  };
-
-  const onRemove = ({ uid, url, name }) => {
-    const newFileList = cloneDeep(fileList)
-    const findIndex = newFileList.findIndex((item) => item.uid === uid);
-    newFileList.splice(findIndex, 1);
-    setFileList([...newFileList]);
+    itemRender: (node, file, fileList, event) => {
+      if (file.response) {
+        const { remove } = event;
+        return previewMap({ ...file, onRemove: remove, onPreview })
+      }
+    }
   };
 
   return <>
@@ -54,11 +77,15 @@ function View() {
         支持单个或批量上传
       </p>
     </Dragger>
-    <div className={style.preview}>
-      {
-        fileList.map(item => previewMap({ ...item, onPreview, onRemove }))
-      }
+    <div style={{ display: 'none' }}>
+      <Image.PreviewGroup preview={{ visible: previewImgVisible, onVisibleChange: (visible) => setPreviewImgVisible(visible) }}>
+        <Image src={previewSrc} />
+      </Image.PreviewGroup>
     </div>
+    <Modal width={1000} footer={false} title={previewTitle} open={previewModalVisible} onCancel={() => setPreviewModalVisible(false)}>
+      <iframe className={style.iframe} src={previewSrc} />
+    </Modal>
+    
   </>
 }
 
