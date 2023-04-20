@@ -1,5 +1,10 @@
 module.exports = {
-  packagerConfig: {},
+  packagerConfig: {
+    ignore: [
+      /usr/,
+      /src/
+    ]
+  },
   rebuildConfig: {},
   makers: [
     {

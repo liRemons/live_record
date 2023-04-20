@@ -2,7 +2,7 @@
  * @Author: liRemons remons@foxmail.com
  * @Date: 2023-04-13 21:38:51
  * @LastEditors: liRemons remons@foxmail.com
- * @LastEditTime: 2023-04-13 23:07:54
+ * @LastEditTime: 2023-04-20 21:00:33
  * @FilePath: \project\live_record\src\pages\calendar\index.jsx
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -31,7 +31,7 @@ function View(props) {
       setActiveDate(dayjs().format('YYYY-MM-DD'));
     }
     setJumpInfo({ year, month })
-  }, [year, month]);
+  }, []);
 
   useEffect(() => {
     props.onChange && props.onChange(activeDate)
@@ -81,35 +81,45 @@ function View(props) {
     return data;
   }
   const handleLast = () => {
-    let countMonth = ((month && year)) ? dayjs().year(year).month(month - 1).subtract(1, 'month') : dayjs().subtract(1, 'month');
-    setYear(countMonth.year());
-    setMonth(countMonth.month() + 1)
+    const countMonth = ((month && year)) ? dayjs().year(year).month(month - 1).subtract(1, 'month') : dayjs().subtract(1, 'month');
+    const newYear = countMonth.year();
+    const newMonth = countMonth.month() + 1;
+    setMonth(newMonth);
+    setYear(newYear);
+    setActiveDate(dayjs().year(newYear).month(newMonth - 1).date(1).format('YYYY-MM-DD'));
+    setData([...getData(newYear, newMonth)]);
+    setJumpInfo({ year: newYear, month: newMonth })
   }
   const handleNext = () => {
-    let countMonth = ((month && year)) ? dayjs().year(year).month(month - 1).add(1, 'month') : dayjs().add(1, 'month');
-    setYear(countMonth.year());
-    setMonth(countMonth.month() + 1)
-  }
-  const awaitUpdateActiveDate = (date) => {
-    setTimeout(() => {
-      setActiveDate(date)
-    }, 0)
+    const countMonth = ((month && year)) ? dayjs().year(year).month(month - 1).add(1, 'month') : dayjs().add(1, 'month');
+    const newYear = countMonth.year();
+    const newMonth = countMonth.month() + 1;
+    setMonth(newMonth);
+    setYear(newYear);
+    setActiveDate(dayjs().year(newYear).month(newMonth - 1).date(1).format('YYYY-MM-DD'));
+    setData([...getData(newYear, newMonth)]);
+    setJumpInfo({ year: newYear, month: newMonth })
   }
   const handleDate = (el) => {
-    if (el.type) {
-      setMonth(el.cMonth);
-      setYear(el.cYear)
-    }
-    awaitUpdateActiveDate(el.date)
+    const {cMonth: newMonth, cYear: newYear } = el;
+    setMonth(newMonth);
+    setYear(newYear);
+    setJumpInfo({ year: newYear, month: newMonth });
+    setData([...getData(newYear, newMonth)]);
+    setActiveDate(el.date);
   };
   const getCNDate = () => {
     const date = dayjs(activeDate || dayjs());
     return calendar.solar2lunar(date.year(), date.month() + 1, date.date());
   }
   const toNow = () => {
-    setYear(dayjs().year());
-    setMonth(dayjs().month() + 1);
-    awaitUpdateActiveDate(dayjs().format('YYYY-MM-DD'));
+    const newYear = dayjs().year();
+    const newMonth = dayjs().month() + 1;
+    setData([...getData(newYear, newMonth)]);
+    setYear(newYear);
+    setMonth(newMonth);
+    setJumpInfo({ year: newYear, month: newMonth });
+    setActiveDate(dayjs().format('YYYY-MM-DD'));
   }
   const compareNow = dayjs(activeDate).diff(dayjs().format('YYYY-MM-DD'), 'day')
 
@@ -127,10 +137,10 @@ function View(props) {
           </div>
           <span className={style.titleMain}>
             <span>{year} 年 {month < 10 ? `0${month}` : month} 月</span>
-            <span className={style.before}> 
+            <span className={style.before}>
               {
-              compareNow ? `${Math.abs(compareNow)}天${compareNow > 0 ? '后' : '前'}` : null
-            }
+                compareNow ? `${Math.abs(compareNow)}天${compareNow > 0 ? '后' : '前'}` : null
+              }
             </span>
           </span>
           <div className={style.card}>
