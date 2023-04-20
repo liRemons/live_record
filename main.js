@@ -86,8 +86,8 @@ app.whenReady().then(() => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
 
-  ipcMain.handle('upload', async (event, { path: filepath, name, uid, type }) => {
-    const uploadPath = parseContext(electronConfig.upload_path, { username: 'admin', date: dayjs(dayjs().format('YYYY-MM-DD')).valueOf() });
+  ipcMain.handle('upload', async (event, { path: filepath, name, uid, type, date }) => {
+    const uploadPath = parseContext(electronConfig.upload_path, { username: 'admin', date: dayjs(date).valueOf() });
     const copyPath = path.resolve(__dirname, `${uploadPath}${name}`)
     await fs.copySync(filepath, copyPath);
     return {

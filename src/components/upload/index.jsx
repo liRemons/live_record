@@ -6,7 +6,7 @@ import { mimeTypeMap, previewMap } from './const';
 import style from './index.module.less';
 
 const { Dragger } = Upload;
-function View() {
+function View({ date }) {
   const [fileList, setFileList] = useState([]);
   const [previewSrc, setPreviewSrc] = useState(null);
   const [previewImgVisible, setPreviewImgVisible] = useState(false);
@@ -47,6 +47,7 @@ function View() {
       };
       const res = await uploadFile({
         path,
+        date,
         name,
         size,
         type: mimeTypeMap.get(type) || mimeTypeMap.get(type.split('/')[0]) || 'file',
