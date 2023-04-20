@@ -42,20 +42,21 @@ const draw = async ({ text, id }) => {
   ctx.fillText(`.${text}`, 100, 100);
 };
 
-export const previewMap = (data) => {
-  const { type, url, uid = '', name, onPreview, onRemove } = data;
-  const src = `file://${url}`;
+const createIframe = (src) => (
+  <iframe scrolling='no' frameBorder={0} src={src} />
+);
 
-  const createIframe = (src) => (
-    <iframe scrolling='no' frameBorder={0} src={src} />
-  );
+export const previewMap = (data) => {
+  const { response, onRemove, onPreview } = data;
+  const { type, url, uid = '', name, } = response;
+  const src = `file://${url}`;
   const transNode = (children) => {
     return (
-      <div key={uid} className={style.previewBox}>
+      <div className={style.previewBox}>
         <div className={style.previewContainer}>
           <div className={style.mark}>
             <span className={style.handle}>
-              <EyeOutlined onClick={() => onPreview(data)} /> 
+              <EyeOutlined onClick={() => onPreview(data.response)} />
               <DeleteOutlined onClick={() => onRemove(data)} />
             </span>
           </div>
