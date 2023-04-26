@@ -174,7 +174,7 @@ function View(props) {
               <span>
                 {el.cDay}
                 <br />
-                <span className={classNames(style.IDayCn, props.dates.includes(`${dayjs(el.date).valueOf()}`) && style.mark, (el.Term && !el.type) && style.term)}>
+                <span className={classNames(style.IDayCn, props?.dates?.includes(`${dayjs(el.date).valueOf()}`) && style.mark, (el.Term && !el.type) && style.term)}>
                   {
                     el.Term ? el.Term : (el.lDay === 1 ? el.IMonthCn : el.IDayCn)
                   }
