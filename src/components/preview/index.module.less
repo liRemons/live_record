@@ -1,0 +1,112 @@
+.previewBox {
+  width: 200px;
+  border-radius: 6px;
+  margin: 0 20px 20px 0;
+  flex-grow: 0;
+  flex-shrink: 0;
+  box-shadow: 0px 0px 10px #33333357;
+
+  .filename {
+    line-height: 30px;
+    bottom: 0;
+    padding: 0 4px;
+    height: 30px;
+    font-size: 12px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    color: #1677ff;
+    cursor: pointer;
+    &:hover {
+      color: #1677ff
+    }
+  }
+}
+
+.previewContainer {
+  position: relative;
+  height: 200px;
+  border-bottom: 1px dashed rgba(204, 204, 204, 0.329);
+  border-radius: 4px;
+
+  padding-bottom: 0;
+  cursor: pointer;
+
+  .src {
+    border-radius: 6px;
+    overflow: hidden;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+
+    img {
+      display: inline-block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    iframe {
+      width: 100%;
+    }
+  }
+
+  .mark {
+    width: 100%;
+    border-radius: 5px;
+    height: 100%;
+    position: absolute;
+    background: rgba(255, 255, 255, 0);
+    top: 0;
+    left: 0;
+    transition: all 0.5s;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    font-size: 20px;
+    .handle {
+      display: none;
+      & > span {
+        transition: all 0.3s;
+        color: #333;
+        display: inline-block;
+        margin: 0 10px;
+        &:hover {
+          color: #1677ff;
+        }
+      }
+    }
+  }
+
+  &:hover .mark {
+    background: rgba(255, 255, 255, 0.7);
+    .handle {
+      display: inline-block;
+    }
+  }
+}
+
+@media screen and (max-width: 600px) {
+  .previewBox {
+    width: 100px;
+    .previewContainer {
+      height: 100px;
+    }
+  }
+}
+
+.iframe {
+  width: 100%;
+  height: 600px;
+  border: none;
+}
+
+
+
+:global {
+.ant-upload-list {
+  display: flex;
+  flex-wrap: wrap;
+}
+}

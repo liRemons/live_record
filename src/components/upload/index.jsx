@@ -1,18 +1,17 @@
-import React, { useState } from 'react';
-import { Upload, Image, Modal } from 'antd';
+import React, { useState, useEffect, memo } from 'react';
+import { Upload } from 'antd';
 import { InboxOutlined } from '@ant-design/icons';
 import { uploadFile } from '../../../utils/renderer';
-import { mimeTypeMap, previewMap } from './const';
-import style from './index.module.less';
+import { mimeTypeMap } from './const';
+import Preview from '../preview';
 
 const { Dragger } = Upload;
-function View({ date }) {
+const View = ({ date, onPropsChange, fileList: propsFileList }) => {
   const [fileList, setFileList] = useState([]);
-  const [previewSrc, setPreviewSrc] = useState(null);
-  const [previewImgVisible, setPreviewImgVisible] = useState(false);
-  const [previewModalVisible, setPreviewModalVisible] = useState(false);
-  const [previewTitle, setPreviewTitle] = useState(null);
 
+  useEffect(() => {
+    setFileList(propsFileList.map(item => ({ ...item, response: item })))
+  }, [])
 
   const onPreview = (data) => {
     const { type, url, name } = data;
@@ -58,12 +57,14 @@ function View({ date }) {
     },
 
     onChange: ({ fileList }) => {
-      setFileList([...fileList])
+      setFileList([...fileList]);
+      onPropsChange && onPropsChange(fileList.map(({ response }) => response))
     },
     itemRender: (node, file, fileList, event) => {
       if (file.response) {
         const { remove } = event;
-        return previewMap({ ...file, onRemove: remove, onPreview })
+        const props = { ...file, onRemove: remove, onPreview, eleId: 'model' };
+        return <Preview {...props} />
       }
     }
   };
@@ -78,16 +79,7 @@ function View({ date }) {
         支持单个或批量上传
       </p>
     </Dragger>
-    <div style={{ display: 'none' }}>
-      <Image.PreviewGroup preview={{ visible: previewImgVisible, onVisibleChange: (visible) => setPreviewImgVisible(visible) }}>
-        <Image src={previewSrc} />
-      </Image.PreviewGroup>
-    </div>
-    <Modal width={1000} footer={false} title={previewTitle} open={previewModalVisible} onCancel={() => setPreviewModalVisible(false)}>
-      <iframe className={style.iframe} src={previewSrc} />
-    </Modal>
-    
   </>
 }
 
-export default View;
+export default memo(View);

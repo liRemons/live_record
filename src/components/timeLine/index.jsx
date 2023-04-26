@@ -1,24 +1,171 @@
-import React from 'react';
-import { Steps } from 'antd'
+import React, { useEffect, useState, useCallback } from 'react';
+import { Steps, Collapse, Empty, Button, Input, Space, Drawer } from 'antd'
+import { getDates } from '../../../utils/renderer';
+import { ButtonBar } from 'remons-components';
+import dayjs from 'dayjs';
+import Preview from '../preview';
+import Upload from '../upload/index';
+import Editor from '../editor/index';
+import { FormOutlined } from '@ant-design/icons';
+import { removeSync, rendJson, writeJson } from '../../../utils/renderer';
+
+import style from './index.module.less'
+
+const { Panel } = Collapse;
+
+function View({ date, changeDate, changeDates }) {
+  const [dates, setDates] = useState([]);
+  const [visible, setVisible] = useState(false);
+  const [title, setTitle] = useState(null);
+  const [content, setContent] = useState(null);
+  const [contentText, setContentText] = useState(null);
+  const [fileList, setFileList] = useState([]);
+  const [handleType, setHandleType] = useState(null);
+  const [activeKeys, setActiveKeys] = useState([]);
 
 
-function View({ date }) {
+  const onChangeCollapse = async (keys) => {
+    setActiveKeys([...keys]);
+    if (keys.length) {
+      const res = await rendJson({ date: keys[0] });
+      dates.forEach(item => {
+        if (+item.value === +keys[0]) {
+          item.data = res;
+        }
+      });
+      setDates([...dates])
+    }
+  }
+
+  const handleClick = async (e, data) => {
+    e.stopPropagation();
+    const info = await rendJson({ date: data.value });
+    if (info) {
+      setFileList(info.fileList);
+      setTitle(info.title);
+      setContent(info.content)
+      setContentText(info.contentText)
+      setVisible(true);
+      setHandleType('edit');
+      changeDate(info.date)
+    }
+  }
+
+
+  const create = () => {
+    setFileList([]);
+    setTitle(null);
+    setContent(null)
+    setContentText(null)
+    setVisible(true);
+    setHandleType('create');
+  }
+
+
+  const renderDescription = (data) => {
+    const { data: info = {} } = data;
+    return data.type === 'empty'
+      ? <Empty
+        description=''
+        image="https://gw.alipayobjects.com/zos/antfincdn/ZHrcdLPrvN/empty.svg"
+      >
+        <Button type='primary' onClick={create}>记录一下</Button>
+      </Empty>
+      : <Collapse accordion activeKey={activeKeys} size="small" onChange={onChangeCollapse}>
+        <Panel header={data.date} extra={<FormOutlined onClick={(e) => handleClick(e, data)} />} key={`${data.value}`}>
+          <div className={style.title}>{info.title}</div>
+          <div className={style.content}> {info.contentText}</div>
+          <div className={style.preview}> {
+            info?.fileList?.length ? info.fileList.map(item => <Preview {...{ response: item }} />) : null
+          }</div>
+        </Panel>
+      </Collapse>
+  }
+
+  const init = async () => {
+    setActiveKeys([])
+    const res = await getDates();
+    changeDates(res)
+    const data = (res || []).map(item => ({ value: +item, date: dayjs(+item).format('YYYY-MM-DD') }));
+    let formatterDates = [];
+    if (!(res || []).includes(`${dayjs(date).valueOf()}`)) {
+      formatterDates = [
+        { value: dayjs(date).valueOf(), title: date, description: '暂无数据', type: 'empty' },
+        ...data,
+      ]
+    } else {
+      formatterDates = data;
+    }
+    formatterDates.forEach(item => {
+      if ((item.date || item.title) === date) {
+        item.status = 'process'
+      } else {
+        item.status = 'wait'
+      };
+    });
+    setDates([...formatterDates.sort((a, b) => b.value - a.value)])
+  }
+
+  useEffect(() => {
+    init()
+  }, [date]);
+
+
+  const onCancel = () => {
+    setVisible(false);
+    if (handleType === 'create') {
+      removeSync({ date });
+    }
+  }
+
+  const onSubmit = async () => {
+    const data = { date, data: { fileList, content, title, date, contentText } };
+    await writeJson(data);
+    setVisible(false);
+    init();
+    onChangeCollapse(activeKeys)
+  }
+
+  const onChangeFileList = useCallback((fileList) => {
+    setFileList(fileList)
+  }, [])
+
+  const onChangeContent = useCallback((html, text) => {
+    setContent(html);
+    setContentText(text)
+  }, [])
+
+  const changeTitle = (e) => {
+    setTitle(e.target.value)
+  }
+
+  dates.forEach(item => {
+    item.description = renderDescription(item)
+  });
+
   return <>
     <Steps
       progressDot
-      current={1}
       direction="vertical"
-      items={[
-        {
-          title: date,
-          description: 'This is a description. This is a description.',
-        },
-        {
-          title: date,
-          description: 'This is a description. This is a description.',
-        },
-      ]}
+      items={dates}
     />
+    <Drawer destroyOnClose width='90%' title='记录' open={visible} onClose={onCancel}>
+      <Space
+        direction="vertical"
+        size="middle"
+        style={{
+          display: 'flex',
+        }}
+      >
+        <Input value={title} onChange={changeTitle} placeholder='起个标题吧' />
+        <Upload fileList={fileList} onPropsChange={onChangeFileList} date={date} />
+        <Editor content={content} onPropsChange={onChangeContent} date={date} />
+      </Space>
+      <ButtonBar>
+        <Button type="primary" onClick={onSubmit}>提交</Button>
+        <Button onClick={onCancel}>取消</Button>
+      </ButtonBar>
+    </Drawer>
   </>
 }
 

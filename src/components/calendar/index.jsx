@@ -1,11 +1,3 @@
-/*
- * @Author: liRemons remons@foxmail.com
- * @Date: 2023-04-13 21:38:51
- * @LastEditors: liRemons remons@foxmail.com
- * @LastEditTime: 2023-04-20 21:00:33
- * @FilePath: \project\live_record\src\pages\calendar\index.jsx
- * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
- */
 import React, { useState, useEffect } from "react";
 import calendar from './calendar';
 import { Button, Modal, InputNumber } from 'antd';
@@ -25,17 +17,26 @@ function View(props) {
   const [visible, setVisible] = useState(false);
   useEffect(() => {
     setData([...getData(year, month)]);
-    if (activeDate) {
-      setActiveDate(dayjs().year(year).month(month - 1).date(1).format('YYYY-MM-DD'));
-    } else {
+    if (!activeDate) {
       setActiveDate(dayjs().format('YYYY-MM-DD'));
+      props.onChange(dayjs().format('YYYY-MM-DD'))
     }
     setJumpInfo({ year, month })
   }, []);
 
+
   useEffect(() => {
-    props.onChange && props.onChange(activeDate)
-  }, [activeDate])
+    const { date } = props;
+    if (date) {
+      const newMonth = dayjs(date).month() + 1
+      const newYear = dayjs(date).year();
+      setMonth(newMonth);
+      setYear(newYear);
+      setJumpInfo({ year: newYear, month: newMonth });
+      setData([...getData(newYear, newMonth)]);
+      setActiveDate(date);
+    }
+  }, [props.date])
 
   const getData = (year = dayjs().year(), month = dayjs().month() + 1) => {
     const now = dayjs().year(year).month(month - 1);
@@ -88,7 +89,9 @@ function View(props) {
     setYear(newYear);
     setActiveDate(dayjs().year(newYear).month(newMonth - 1).date(1).format('YYYY-MM-DD'));
     setData([...getData(newYear, newMonth)]);
-    setJumpInfo({ year: newYear, month: newMonth })
+    setJumpInfo({ year: newYear, month: newMonth });
+    props.onChange(dayjs().year(newYear).month(newMonth - 1).date(1).format('YYYY-MM-DD'))
+
   }
   const handleNext = () => {
     const countMonth = ((month && year)) ? dayjs().year(year).month(month - 1).add(1, 'month') : dayjs().add(1, 'month');
@@ -99,14 +102,16 @@ function View(props) {
     setActiveDate(dayjs().year(newYear).month(newMonth - 1).date(1).format('YYYY-MM-DD'));
     setData([...getData(newYear, newMonth)]);
     setJumpInfo({ year: newYear, month: newMonth })
+    props.onChange(dayjs().year(newYear).month(newMonth - 1).date(1).format('YYYY-MM-DD'))
   }
   const handleDate = (el) => {
-    const {cMonth: newMonth, cYear: newYear } = el;
+    const { cMonth: newMonth, cYear: newYear } = el;
     setMonth(newMonth);
     setYear(newYear);
     setJumpInfo({ year: newYear, month: newMonth });
     setData([...getData(newYear, newMonth)]);
     setActiveDate(el.date);
+    props.onChange(el.date)
   };
   const getCNDate = () => {
     const date = dayjs(activeDate || dayjs());
@@ -120,9 +125,9 @@ function View(props) {
     setMonth(newMonth);
     setJumpInfo({ year: newYear, month: newMonth });
     setActiveDate(dayjs().format('YYYY-MM-DD'));
+    props.onChange(dayjs().format('YYYY-MM-DD'))
   }
   const compareNow = dayjs(activeDate).diff(dayjs().format('YYYY-MM-DD'), 'day')
-
   return <div className={style.container}>
     <div className={style.nowInfo}>
       <div className={classNames(style.date)}>
@@ -169,7 +174,7 @@ function View(props) {
               <span>
                 {el.cDay}
                 <br />
-                <span className={classNames(style.IDayCn, (el.Term && !el.type) && style.term)}>
+                <span className={classNames(style.IDayCn, props.dates.includes(`${dayjs(el.date).valueOf()}`) && style.mark, (el.Term && !el.type) && style.term)}>
                   {
                     el.Term ? el.Term : (el.lDay === 1 ? el.IMonthCn : el.IDayCn)
                   }
@@ -186,9 +191,15 @@ function View(props) {
       <Button size="large" type="primary" shape="circle" onClick={() => setVisible(true)}><SendOutlined /></Button>
     </div>
     <Modal open={visible} title='日期跳转' onCancel={() => setVisible(false)} onOk={() => {
-      setYear(jumpInfo.year);
-      setMonth(jumpInfo.month);
-      setVisible(false)
+      const newYear = jumpInfo.year;
+      const newMonth = jumpInfo.month;
+      setYear(newYear);
+      setMonth(newMonth);
+      setVisible(false);
+      setData([...getData(newYear, newMonth)]);
+      setJumpInfo({ year: newYear, month: newMonth });
+      setActiveDate(dayjs().year(newYear).month(newMonth - 1).date(1).format('YYYY-MM-DD'));
+      props.onChange(dayjs().year(newYear).month(newMonth - 1).date(1).format('YYYY-MM-DD'));
     }}>
       <InputNumber
         value={jumpInfo.year}

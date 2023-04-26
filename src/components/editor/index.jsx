@@ -1,15 +1,18 @@
 import '@wangeditor/editor/dist/css/style.css' // 引入 css
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, memo } from 'react'
 import { Editor, Toolbar } from '@wangeditor/editor-for-react'
-import { IDomEditor, IEditorConfig, IToolbarConfig } from '@wangeditor/editor'
 
-function MyEditor() {
+const View = ({ onPropsChange, content }) => {
   // editor 实例
   const [editor, setEditor] = useState(null)
 
   // 编辑器内容
   const [html, setHtml] = useState(null)
+
+  useEffect(() => {
+      content &&  setHtml(content);
+  }, [])
 
   // 工具栏配置
   const toolbarConfig = {
@@ -48,7 +51,10 @@ function MyEditor() {
           defaultConfig={editorConfig}
           value={html}
           onCreated={setEditor}
-          onChange={editor => setHtml(editor.getHtml())}
+          onChange={editor => {
+            setHtml(editor.getHtml())
+            onPropsChange && onPropsChange(editor.getHtml(), editor.getText())
+          }}
           mode="default"
           style={{ height: '500px', overflowY: 'hidden' }}
         />
@@ -57,4 +63,4 @@ function MyEditor() {
   )
 }
 
-export default MyEditor
+export default memo(View)

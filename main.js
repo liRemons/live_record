@@ -12,7 +12,8 @@
 // electron 模块可以用来控制应用的生命周期和创建原生浏览窗口
 const path = require('path');
 const electronConfig = require('./electron.config.json');
-const fs = require('fs-extra');
+const fsExtra = require('fs-extra');
+const fs = require('fs');
 const { parseContext } = require('./utils');
 const dayjs = require('dayjs');
 
@@ -34,8 +35,8 @@ const createWindow = () => {
   });
 
   // 加载 index.html
-  mainWindow.loadURL(' http://localhost:8080/');
-  // mainWindow.loadFile('dist/index.html');
+  // mainWindow.loadURL(' http://localhost:8080/');
+  mainWindow.loadFile('dist/index.html');
 
   mainWindow.on('ready-to-show', function () {
     mainWindow.show();
@@ -43,7 +44,7 @@ const createWindow = () => {
   });
 
   // 打开开发工具
-  mainWindow.webContents.openDevTools();
+  // mainWindow.webContents.openDevTools();
 };
 
 app.on('ready', () => {
@@ -89,7 +90,7 @@ app.whenReady().then(() => {
   ipcMain.handle('upload', async (event, { path: filepath, name, uid, type, date }) => {
     const uploadPath = parseContext(electronConfig.upload_path, { username: 'admin', date: dayjs(date).valueOf() });
     const copyPath = path.resolve(__dirname, `${uploadPath}${name}`)
-    await fs.copySync(filepath, copyPath);
+    await fsExtra.copySync(filepath, copyPath);
     return {
       url: copyPath,
       status: 'done',
@@ -98,6 +99,46 @@ app.whenReady().then(() => {
       type
     }
   });
+
+  ipcMain.handle('getDates', async (e) => {
+    const uploadPath = parseContext(electronConfig.upload_path, { username: 'admin', date: '/' });
+    try {
+      const res = await fs.readdirSync(path.resolve(__dirname, uploadPath));
+      const newPromise = (date) => {
+        return new Promise(async (resolve) => {
+          const flag = await fs.existsSync(`${uploadPath}${date}/data.json`);
+          resolve({ date, flag })
+        })
+      }
+      let all = res.map((date) => newPromise(date))
+      const allRes = await Promise.all(all);
+      return allRes.filter(item => item.flag).map(item => item.date)
+    } catch (error) {
+      log(error)
+    }
+  })
+
+  ipcMain.handle('removeSync', async (e, { date }) => {
+    const uploadPath = parseContext(electronConfig.upload_path, { username: 'admin', date: dayjs(date).valueOf() });
+    await fsExtra.removeSync(uploadPath);
+    return true;
+  })
+
+  ipcMain.handle('writeJson', async (e, { date, data }) => {
+    const uploadPath = parseContext(electronConfig.upload_path, { username: 'admin', date: dayjs(date).valueOf() });
+    await fsExtra.writeJsonSync(`${uploadPath}data.json`, data);
+    const rendData = fsExtra.readJsonSync(`${uploadPath}data.json`);
+    return rendData;
+  })
+
+  ipcMain.handle('rendJson', async (e, { date }) => {
+    const uploadPath = parseContext(electronConfig.upload_path, { username: 'admin', date });
+    const rendData = await fsExtra.readJsonSync(`${uploadPath}data.json`);
+    return rendData;
+  })
+
+
+
 });
 
 // 除了 macOS 外，当所有窗口都被关闭的时候退出程序。 因此, 通常

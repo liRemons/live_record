@@ -1,0 +1,42 @@
+.title {
+  font-weight: bold;
+  line-height: 24px;
+  font-size: 14px;
+}
+
+.preview {
+  display: flex;
+  overflow: auto;
+  padding: 10px;
+}
+
+.content {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+}
+
+
+:global {
+  .ant-collapse {
+    font-weight: 400;
+    border: none;
+    margin: 10px;
+    box-shadow: 0px 0px 6px #9c9c9c4e;
+
+    .ant-collapse-item {
+      border-bottom: none;
+    }
+
+    .ant-collapse-content {
+      border-top: none;
+    }
+  }
+}
