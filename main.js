@@ -2,7 +2,7 @@
  * @Author: liRemons remons@foxmail.com
  * @Date: 2023-04-14 21:10:50
  * @LastEditors: liRemons remons@foxmail.com
- * @LastEditTime: 2023-04-27 00:02:09
+ * @LastEditTime: 2023-04-27 19:55:20
  * @FilePath: \project\electron_test\mian.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -17,7 +17,7 @@ const fs = require('fs');
 const { parseContext } = require('./utils');
 const dayjs = require('dayjs');
 
-const { app, BrowserWindow, Menu, ipcMain } = require('electron');
+const { app, BrowserWindow, Menu, globalShortcut, ipcMain } = require('electron');
 
 let mainWindow;
 
@@ -26,17 +26,16 @@ const createWindow = () => {
   mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
-    // titleBarStyle: 'hidden',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: true,
-      webSecurity: false
+      webSecurity: false,
     },
   });
 
   // 加载 index.html
-  // mainWindow.loadURL(' http://localhost:8080/');
-  mainWindow.loadFile('dist/index.html');
+  mainWindow.loadURL(' http://localhost:8080/');
+  // mainWindow.loadFile('dist/index.html');
 
   mainWindow.on('ready-to-show', function () {
     mainWindow.show();
@@ -48,15 +47,12 @@ const createWindow = () => {
 };
 
 app.on('ready', () => {
-  // 开发模式下注册快捷键
-  if (process.env.NODE_ENV == 'development') {
-    globalShortcut.register('CommandOrControl+F12', () => {
-      mainWindow.webContents.openDevTools();
-    });
-    globalShortcut.register('CommandOrControl+F5', () => {
-      mainWindow.webContents.reload();
-    });
-  }
+  globalShortcut.register('CommandOrControl+F12', () => {
+    mainWindow.webContents.openDevTools();
+  });
+  globalShortcut.register('CommandOrControl+F5', () => {
+    mainWindow.webContents.reload();
+  });
 });
 
 app.on('window-all-closed', () => {
@@ -74,6 +70,7 @@ app.on('activate', () => {
 const log = (data) => {
   mainWindow.webContents.send('log', JSON.stringify(data));
 };
+
 
 // 这段程序将会在 Electron 结束初始化
 // 和创建浏览器窗口的时候调用
@@ -126,7 +123,7 @@ app.whenReady().then(() => {
 
   ipcMain.handle('writeJson', async (e, { date, data }) => {
     const uploadPath = parseContext(electronConfig.upload_path, { username: 'admin', date: dayjs(date).valueOf() });
-    await fsExtra.writeJsonSync(`${uploadPath}data.json`, data);
+    await fsExtra.outputJsonSync(`${uploadPath}data.json`, data);
     const rendData = fsExtra.readJsonSync(`${uploadPath}data.json`);
     return rendData;
   })
@@ -137,6 +134,33 @@ app.whenReady().then(() => {
     return rendData;
   })
 
+  ipcMain.handle('contextHanleMenu', async (e, { key }) => {
+    const handleMap = {
+      fullScreen: () => mainWindow.setFullScreen(true),
+      notFullScreen: () => mainWindow.setFullScreen(false),
+      reload: () => mainWindow.webContents.reload(),
+      openTool: () => mainWindow.webContents.openDevTools(),
+      closeTool: () => mainWindow.webContents.closeDevTools(),
+    }
+
+    if (handleMap[key]) {
+      handleMap[key]()
+    }
+  });
+
+
+  ipcMain.handle('winContext', (e, { key }) => {
+    return {
+      // 控制台
+      isDevToolsOpened: mainWindow.isDevToolsOpened(),
+      // 全屏
+      isFullScreen: mainWindow.isFullScreen(),
+      // 最小化
+      isMinimized: mainWindow.isMinimized(),
+      // 最大化
+      isMaximized: mainWindow.isMaximized()
+    }[key]
+  })
 
 
 });

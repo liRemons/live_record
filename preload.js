@@ -9,9 +9,11 @@ contextBridge.exposeInMainWorld('versions', {
 
 contextBridge.exposeInMainWorld('electronAPI', {
   upload: (data) => ipcRenderer.invoke('upload', data),
+  contextHanleMenu: (data) => ipcRenderer.invoke('contextHanleMenu', data),
   getDates: (data) => ipcRenderer.invoke('getDates', data),
   removeSync: (data) => ipcRenderer.invoke('removeSync', data),
   writeJson: (data) => ipcRenderer.invoke('writeJson', data),
   rendJson: (data) => ipcRenderer.invoke('rendJson', data),
+  winContext: (data) => ipcRenderer.invoke('winContext', data),
   log: (callback) => ipcRenderer.on('log', callback),
 })

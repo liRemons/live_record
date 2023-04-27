@@ -15,6 +15,14 @@ export const writeJson = (params) => {
   return window.electronAPI.writeJson(params);
 }
 
+export const contextHanleMenu = (params) => {
+  return window.electronAPI.contextHanleMenu(params);
+}
+
+export const winContext = (params) => {
+  return window.electronAPI.winContext(params);
+}
+
 export const rendJson = (params) => {
   return window.electronAPI.rendJson(params);
 }
