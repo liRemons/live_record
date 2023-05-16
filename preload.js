@@ -8,12 +8,12 @@ contextBridge.exposeInMainWorld('versions', {
 })
 
 contextBridge.exposeInMainWorld('electronAPI', {
-  upload: (data) => ipcRenderer.invoke('upload', data),
+  recordUpload: (data) => ipcRenderer.invoke('recordUpload', data),
   contextHanleMenu: (data) => ipcRenderer.invoke('contextHanleMenu', data),
-  getDates: (data) => ipcRenderer.invoke('getDates', data),
-  removeSync: (data) => ipcRenderer.invoke('removeSync', data),
-  writeJson: (data) => ipcRenderer.invoke('writeJson', data),
-  rendJson: (data) => ipcRenderer.invoke('rendJson', data),
+  recordGetDates: (data) => ipcRenderer.invoke('recordGetDates', data),
+  recordRemoveSync: (data) => ipcRenderer.invoke('recordRemoveSync', data),
+  recordWriteJson: (data) => ipcRenderer.invoke('recordWriteJson', data),
+  recordRendJson: (data) => ipcRenderer.invoke('recordRendJson', data),
   winContext: (data) => ipcRenderer.invoke('winContext', data),
   log: (callback) => ipcRenderer.on('log', callback),
 })

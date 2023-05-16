@@ -6,6 +6,7 @@ import { arrGroup } from 'methods-r';
 import style from './index.module.less';
 import classNames from 'classnames';
 import Terms from './component/terms';
+import { SizeInput } from 'remons-components';
 import { LeftOutlined, RightOutlined, SendOutlined } from '@ant-design/icons';
 
 function View(props) {
@@ -21,20 +22,28 @@ function View(props) {
       setActiveDate(dayjs().format('YYYY-MM-DD'));
       props.onChange(dayjs().format('YYYY-MM-DD'))
     }
-    setJumpInfo({ year, month })
+    setJumpInfo({ year, month, date: activeDate ? dayjs(activeDate).date() : dayjs().date() })
   }, []);
 
+  const changeDate = ({
+    newMonth,
+    newYear,
+    date = dayjs().year(newYear).month(newMonth - 1).date(1).format('YYYY-MM-DD')
+  }) => {
+    setMonth(newMonth);
+    setYear(newYear);
+    setActiveDate(date);
+    setData([...getData(newYear, newMonth)]);
+    setJumpInfo({ year: newYear, month: newMonth, date: dayjs(date).date() });
+    props.onChange(date)
+  }
 
   useEffect(() => {
     const { date } = props;
     if (date) {
       const newMonth = dayjs(date).month() + 1
       const newYear = dayjs(date).year();
-      setMonth(newMonth);
-      setYear(newYear);
-      setJumpInfo({ year: newYear, month: newMonth });
-      setData([...getData(newYear, newMonth)]);
-      setActiveDate(date);
+      changeDate({ newMonth, newYear, date })
     }
   }, [props.date])
 
@@ -81,53 +90,48 @@ function View(props) {
     data.splice(nextBeforeLength, nextData.length, ...nextData)
     return data;
   }
+
+
   const handleLast = () => {
     const countMonth = ((month && year)) ? dayjs().year(year).month(month - 1).subtract(1, 'month') : dayjs().subtract(1, 'month');
     const newYear = countMonth.year();
     const newMonth = countMonth.month() + 1;
-    setMonth(newMonth);
-    setYear(newYear);
-    setActiveDate(dayjs().year(newYear).month(newMonth - 1).date(1).format('YYYY-MM-DD'));
-    setData([...getData(newYear, newMonth)]);
-    setJumpInfo({ year: newYear, month: newMonth });
-    props.onChange(dayjs().year(newYear).month(newMonth - 1).date(1).format('YYYY-MM-DD'))
-
+    changeDate({ newYear, newMonth })
   }
+
   const handleNext = () => {
     const countMonth = ((month && year)) ? dayjs().year(year).month(month - 1).add(1, 'month') : dayjs().add(1, 'month');
     const newYear = countMonth.year();
     const newMonth = countMonth.month() + 1;
-    setMonth(newMonth);
-    setYear(newYear);
-    setActiveDate(dayjs().year(newYear).month(newMonth - 1).date(1).format('YYYY-MM-DD'));
-    setData([...getData(newYear, newMonth)]);
-    setJumpInfo({ year: newYear, month: newMonth })
-    props.onChange(dayjs().year(newYear).month(newMonth - 1).date(1).format('YYYY-MM-DD'))
+    changeDate({ newYear, newMonth })
   }
+
   const handleDate = (el) => {
     const { cMonth: newMonth, cYear: newYear } = el;
-    setMonth(newMonth);
-    setYear(newYear);
-    setJumpInfo({ year: newYear, month: newMonth });
-    setData([...getData(newYear, newMonth)]);
-    setActiveDate(el.date);
-    props.onChange(el.date)
+    changeDate({ newYear, newMonth, date: el.date })
   };
+
   const getCNDate = () => {
     const date = dayjs(activeDate || dayjs());
     return calendar.solar2lunar(date.year(), date.month() + 1, date.date());
   }
+
   const toNow = () => {
     const newYear = dayjs().year();
     const newMonth = dayjs().month() + 1;
-    setData([...getData(newYear, newMonth)]);
-    setYear(newYear);
-    setMonth(newMonth);
-    setJumpInfo({ year: newYear, month: newMonth });
-    setActiveDate(dayjs().format('YYYY-MM-DD'));
-    props.onChange(dayjs().format('YYYY-MM-DD'))
+    changeDate({ newYear, newMonth, date: dayjs().format('YYYY-MM-DD') })
   }
-  const compareNow = dayjs(activeDate).diff(dayjs().format('YYYY-MM-DD'), 'day')
+
+  const changeJump = (val) => {
+    const [year, month, date] = val;
+    setJumpInfo({
+      year,
+      month,
+      date
+    })
+  }
+
+  const compareNow = dayjs(activeDate).diff(dayjs().format('YYYY-MM-DD'), 'day');
   return <div className={style.container}>
     <div className={style.nowInfo}>
       <div className={classNames(style.date)}>
@@ -148,11 +152,11 @@ function View(props) {
               }
             </span>
           </span>
-          <div className={style.card}>
+          {getCNDate().IDayCn ? <div className={style.card}>
             <span className={style.week}>{getCNDate().IMonthCn}</span>
             <br />
             <span className={classNames(style.day, style.cnDay)}>{getCNDate().IDayCn}</span>
-          </div>
+          </div> : <div />}
         </div>
         <Button shape="circle" onClick={handleNext}>
           <RightOutlined />
@@ -193,29 +197,24 @@ function View(props) {
     <Modal open={visible} title='日期跳转' onCancel={() => setVisible(false)} onOk={() => {
       const newYear = jumpInfo.year;
       const newMonth = jumpInfo.month;
-      setYear(newYear);
-      setMonth(newMonth);
+      const newDate = jumpInfo.date;
       setVisible(false);
-      setData([...getData(newYear, newMonth)]);
-      setJumpInfo({ year: newYear, month: newMonth });
-      setActiveDate(dayjs().year(newYear).month(newMonth - 1).date(1).format('YYYY-MM-DD'));
-      props.onChange(dayjs().year(newYear).month(newMonth - 1).date(1).format('YYYY-MM-DD'));
+      changeDate({ newMonth, newYear, date: dayjs().year(newYear).month(newMonth - 1).date(newDate).format('YYYY-MM-DD') })
     }}>
-      <InputNumber
-        value={jumpInfo.year}
-        onChange={(year) => setJumpInfo({
-          year, month: jumpInfo.month
-        })}
-        min={1900}
-        max={2100} /> 年
-      <InputNumber
-        value={jumpInfo.month}
-        min={1}
-        max={12}
-        onChange={(month) => setJumpInfo({
-          year: jumpInfo.year, month: month
-        })}
-      /> 月
+      <SizeInput
+        onChange={changeJump}
+        value={[
+          jumpInfo.year,
+          jumpInfo.month,
+          jumpInfo.date
+        ]}
+        unit={['年', '月', '日']}
+        placeholder={['年', '月', '日']}
+        numberInputProps={[
+          { min: 0, step: 1 },
+          { min: 1, step: 1, max: 12 },
+          { min: 1, step: 1, max: 31 },
+        ]} />
     </Modal>
   </div>
 }

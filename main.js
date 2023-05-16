@@ -11,21 +11,25 @@
 
 // electron 模块可以用来控制应用的生命周期和创建原生浏览窗口
 const path = require('path');
-const electronConfig = require('./electron.config.json');
-const fsExtra = require('fs-extra');
-const fs = require('fs');
-const { parseContext } = require('./utils');
-const dayjs = require('dayjs');
-
-const { app, BrowserWindow, Menu, globalShortcut, ipcMain } = require('electron');
+const {
+  recordUpload,
+  recordGetDates,
+  recordRemoveSync,
+  recordWriteJson,
+  recordRendJson,
+  contextHanleMenu,
+  winContext,
+  recordWriteConfig
+} = require('./utils/main');
+const { app, BrowserWindow, globalShortcut, ipcMain } = require('electron');
 
 let mainWindow;
 
 const createWindow = () => {
   // 创建浏览窗口
   mainWindow = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: 1200,
+    height: 800,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: true,
@@ -34,7 +38,7 @@ const createWindow = () => {
   });
 
   // 加载 index.html
-  mainWindow.loadURL(' http://localhost:8080/');
+  mainWindow.loadURL('http://localhost:8080/');
   // mainWindow.loadFile('dist/index.html');
 
   mainWindow.on('ready-to-show', function () {
@@ -67,10 +71,6 @@ app.on('activate', () => {
   }
 });
 
-const log = (data) => {
-  mainWindow.webContents.send('log', JSON.stringify(data));
-};
-
 
 // 这段程序将会在 Electron 结束初始化
 // 和创建浏览器窗口的时候调用
@@ -84,85 +84,20 @@ app.whenReady().then(() => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
 
-  ipcMain.handle('upload', async (event, { path: filepath, name, uid, type, date }) => {
-    const uploadPath = parseContext(electronConfig.upload_path, { username: 'admin', date: dayjs(date).valueOf() });
-    const copyPath = path.resolve(__dirname, `${uploadPath}${name}`)
-    await fsExtra.copySync(filepath, copyPath);
-    return {
-      url: copyPath,
-      status: 'done',
-      name,
-      uid,
-      type
-    }
-  });
+  const handles = [
+    { key: 'recordUpload', cb: recordUpload },
+    { key: 'recordGetDates', cb: recordGetDates },
+    { key: 'recordRemoveSync', cb: recordRemoveSync },
+    { key: 'recordWriteJson', cb: recordWriteJson },
+    { key: 'recordRendJson', cb: recordRendJson },
+    { key: 'recordWriteConfig', cb: recordWriteConfig },
+    { key: 'contextHanleMenu', cb: (e, { key }) => contextHanleMenu({ key, mainWindow }) },
+    { key: 'winContext', cb: (e, { key }) => winContext({ key, mainWindow }) },
+  ]
 
-  ipcMain.handle('getDates', async (e) => {
-    const uploadPath = parseContext(electronConfig.upload_path, { username: 'admin', date: '/' });
-    try {
-      const res = await fs.readdirSync(path.resolve(__dirname, uploadPath));
-      const newPromise = (date) => {
-        return new Promise(async (resolve) => {
-          const flag = await fs.existsSync(`${uploadPath}${date}/data.json`);
-          resolve({ date, flag })
-        })
-      }
-      let all = res.map((date) => newPromise(date))
-      const allRes = await Promise.all(all);
-      return allRes.filter(item => item.flag).map(item => item.date)
-    } catch (error) {
-      log(error)
-    }
+  handles.forEach(item => {
+    ipcMain.handle(item.key, item.cb);
   })
-
-  ipcMain.handle('removeSync', async (e, { date }) => {
-    const uploadPath = parseContext(electronConfig.upload_path, { username: 'admin', date: dayjs(date).valueOf() });
-    await fsExtra.removeSync(uploadPath);
-    return true;
-  })
-
-  ipcMain.handle('writeJson', async (e, { date, data }) => {
-    const uploadPath = parseContext(electronConfig.upload_path, { username: 'admin', date: dayjs(date).valueOf() });
-    await fsExtra.outputJsonSync(`${uploadPath}data.json`, data);
-    const rendData = fsExtra.readJsonSync(`${uploadPath}data.json`);
-    return rendData;
-  })
-
-  ipcMain.handle('rendJson', async (e, { date }) => {
-    const uploadPath = parseContext(electronConfig.upload_path, { username: 'admin', date });
-    const rendData = await fsExtra.readJsonSync(`${uploadPath}data.json`);
-    return rendData;
-  })
-
-  ipcMain.handle('contextHanleMenu', async (e, { key }) => {
-    const handleMap = {
-      fullScreen: () => mainWindow.setFullScreen(true),
-      notFullScreen: () => mainWindow.setFullScreen(false),
-      reload: () => mainWindow.webContents.reload(),
-      openTool: () => mainWindow.webContents.openDevTools(),
-      closeTool: () => mainWindow.webContents.closeDevTools(),
-    }
-
-    if (handleMap[key]) {
-      handleMap[key]()
-    }
-  });
-
-
-  ipcMain.handle('winContext', (e, { key }) => {
-    return {
-      // 控制台
-      isDevToolsOpened: mainWindow.isDevToolsOpened(),
-      // 全屏
-      isFullScreen: mainWindow.isFullScreen(),
-      // 最小化
-      isMinimized: mainWindow.isMinimized(),
-      // 最大化
-      isMaximized: mainWindow.isMaximized()
-    }[key]
-  })
-
-
 });
 
 // 除了 macOS 外，当所有窗口都被关闭的时候退出程序。 因此, 通常
@@ -171,6 +106,3 @@ app.whenReady().then(() => {
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
 });
-
-// 在当前文件中你可以引入所有的主进程代码
-// 也可以拆分成几个文件，然后用 require 导入。

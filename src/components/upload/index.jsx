@@ -1,16 +1,18 @@
 import React, { useState, useEffect, memo } from 'react';
 import { Upload } from 'antd';
 import { InboxOutlined } from '@ant-design/icons';
-import { uploadFile } from '../../../utils/renderer';
 import { mimeTypeMap } from './const';
 import Preview from '../preview';
+import { recordUploadFile } from '../../../utils/renderer';
 
 const { Dragger } = Upload;
-const View = ({ date, onPropsChange, fileList: propsFileList }) => {
+const View = ({ onPropsChange, fileList: propsFileList, uploadPath, accept }) => {
   const [fileList, setFileList] = useState([]);
 
   useEffect(() => {
-    setFileList(propsFileList.map(item => ({ ...item, response: item })))
+    if (propsFileList) {
+      setFileList(propsFileList.map(item => ({ ...item, response: item })))
+    }
   }, [])
 
   const onPreview = (data) => {
@@ -44,14 +46,14 @@ const View = ({ date, onPropsChange, fileList: propsFileList }) => {
       if (size > 1000 * 1000 * 50) {
         return
       };
-      const res = await uploadFile({
+      const res = await recordUploadFile({
         path,
-        date,
         name,
         size,
         type: mimeTypeMap.get(type) || mimeTypeMap.get(type.split('/')[0]) || 'file',
         uid,
         status: 'done',
+        uploadPath
       });
       onSuccess(res, file)
     },
@@ -70,7 +72,7 @@ const View = ({ date, onPropsChange, fileList: propsFileList }) => {
   };
 
   return <>
-    <Dragger multiple {...props}>
+    <Dragger accept={accept || ''} multiple {...props}>
       <p className="ant-upload-drag-icon">
         <InboxOutlined />
       </p>

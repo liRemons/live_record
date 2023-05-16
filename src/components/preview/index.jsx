@@ -1,5 +1,5 @@
 import React, { useState, Fragment } from "react";
-import { DeleteOutlined, EyeOutlined } from '@ant-design/icons';
+import { DeleteOutlined, EyeOutlined, DownloadOutlined } from '@ant-design/icons';
 import { Image, Modal } from 'antd'
 import errSvg from '../../assets/svg/文件.svg';
 import style from './index.module.less';
@@ -64,13 +64,15 @@ const View = (props) => {
   const { response, onRemove, eleId } = props;
   const { type, url, uid = '', name, } = response;
   const src = `file://${url}`;
-  const transNode = (children) => {
+  const transNode = (children, type) => {
     return (
       <div className={style.previewBox}>
         <div className={style.previewContainer}>
           <div className={style.mark}>
             <span className={style.handle}>
-              <EyeOutlined onClick={() => onPreview(response)} />
+              <div onClick={() => onPreview(response)}>
+                {type ? <DownloadOutlined /> : <EyeOutlined />}
+              </div>
               {onRemove && <DeleteOutlined onClick={() => onRemove(props)} />}
             </span>
           </div>
@@ -83,8 +85,8 @@ const View = (props) => {
 
   const obj = {
     text: transNode(createIframe(src)),
-    audio: transNode(createIframe(src)),
-    video: transNode(createIframe(src)),
+    audio: transNode(createIframe(`${src}?autoplay=no`)),
+    video: transNode(createIframe(`${src}?autoplay=no`)),
     ppt: transNode(createIframe(src)),
     pdf: transNode(createIframe(src)),
     image: transNode(<img src={src} />),
@@ -107,7 +109,7 @@ const View = (props) => {
         id,
       });
     }, 200);
-    Com = () => transNode(<canvas width={width} height={height} id={id} />);
+    Com = () => transNode(<canvas width={width} height={height} id={id} />, 'download');
   } else {
     Com = () => obj[type];
   }

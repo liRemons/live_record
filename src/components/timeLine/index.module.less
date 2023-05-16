@@ -24,7 +24,16 @@
 }
 
 
+.container {
+  height: 100%;
+}
+
 :global {
+  .ant-steps {
+    padding: 20px 0;
+    overflow: auto;
+    height: 100%;
+  }
   .ant-collapse {
     font-weight: 400;
     border: none;
@@ -38,5 +47,9 @@
     .ant-collapse-content {
       border-top: none;
     }
+  }
+
+  :where(.css-dev-only-do-not-override-yp8pcc).ant-steps.ant-steps-vertical.ant-steps-dot .ant-steps-item-process .ant-steps-item-icon {
+    inset-inline-start: 0
   }
 }

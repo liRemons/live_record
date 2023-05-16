@@ -1,13 +1,15 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Steps, Collapse, Empty, Button, Input, Space, Drawer } from 'antd'
-import { getDates } from '../../../utils/renderer';
+import { recordGetDates } from '../../../utils/renderer';
 import { ButtonBar } from 'remons-components';
 import dayjs from 'dayjs';
 import Preview from '../preview';
 import Upload from '../upload/index';
 import Editor from '../editor/index';
 import { FormOutlined } from '@ant-design/icons';
-import { removeSync, rendJson, writeJson } from '../../../utils/renderer';
+import { parseContext } from '../../../utils';
+import config from '../../../electron.config.json'
+import { recordRemoveSync, recordRendJson, recordWriteJson } from '../../../utils/renderer';
 
 import style from './index.module.less'
 
@@ -23,11 +25,15 @@ function View({ date, changeDate, changeDates }) {
   const [handleType, setHandleType] = useState(null);
   const [activeKeys, setActiveKeys] = useState([]);
 
+  const uploadPath = (date) => {
+    return parseContext(config.upload_path, { username: 'admin', date: dayjs(date).valueOf() })
+  }
+
 
   const onChangeCollapse = async (keys) => {
     setActiveKeys([...keys]);
     if (keys.length) {
-      const res = await rendJson({ date: keys[0] });
+      const res = await recordRendJson({ uploadPath:uploadPath(dayjs(+keys[0]).format('YYYY-MM-DD'))  });
       dates.forEach(item => {
         if (+item.value === +keys[0]) {
           item.data = res;
@@ -37,9 +43,10 @@ function View({ date, changeDate, changeDates }) {
     }
   }
 
+
   const handleClick = async (e, data) => {
     e.stopPropagation();
-    const info = await rendJson({ date: data.value });
+    const info = await recordRendJson({ uploadPath: uploadPath(data.value) });
     if (info) {
       setFileList(info.fileList);
       setTitle(info.title);
@@ -84,7 +91,7 @@ function View({ date, changeDate, changeDates }) {
 
   const init = async () => {
     setActiveKeys([])
-    const res = await getDates();
+    const res = await recordGetDates();
     changeDates(res)
     const data = (res || []).map(item => ({ value: +item, date: dayjs(+item).format('YYYY-MM-DD') }));
     let formatterDates = [];
@@ -114,15 +121,19 @@ function View({ date, changeDate, changeDates }) {
   const onCancel = () => {
     setVisible(false);
     if (handleType === 'create') {
-      removeSync({ date });
+      recordRemoveSync({
+        uploadPath: uploadPath(date)
+      });
     }
   }
 
   const onSubmit = async () => {
-    const data = { date, data: { fileList, content, title, date, contentText } };
-    await writeJson(data);
+    const data = { uploadPath: uploadPath(date), data: { fileList, content, title, date, contentText } };
+    await recordWriteJson(data);
     setVisible(false);
-    init();
+    setTimeout(() => {
+      init();
+    }, 100)
     onChangeCollapse(activeKeys)
   }
 
@@ -143,7 +154,7 @@ function View({ date, changeDate, changeDates }) {
     item.description = renderDescription(item)
   });
 
-  return <>
+  return <div className={style.container}>
     <Steps
       progressDot
       direction="vertical"
@@ -158,7 +169,11 @@ function View({ date, changeDate, changeDates }) {
         }}
       >
         <Input value={title} onChange={changeTitle} placeholder='起个标题吧' />
-        <Upload fileList={fileList} onPropsChange={onChangeFileList} date={date} />
+        <Upload
+          fileList={fileList}
+          onPropsChange={onChangeFileList}
+          uploadPath={uploadPath(date)}
+        />
         <Editor content={content} onPropsChange={onChangeContent} date={date} />
       </Space>
       <ButtonBar>
@@ -166,7 +181,7 @@ function View({ date, changeDate, changeDates }) {
         <Button onClick={onCancel}>取消</Button>
       </ButtonBar>
     </Drawer>
-  </>
+  </div>
 }
 
 export default View;
