@@ -30,3 +30,4 @@ export const recordRendJson = (params) => {
 export const recordGetDates = () => {
   return window.electronAPI.recordGetDates();
 };
+

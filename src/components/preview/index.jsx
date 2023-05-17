@@ -45,10 +45,13 @@ const View = (props) => {
     const openDialog = () => {
       setPreviewModalVisible(true);
     }
+
+  
     const handles = {
       image: handleImg,
       pdf: openDialog,
-      video: openDialog
+      video: openDialog,
+      audio: openDialog
     }
 
     if (handles[type]) {
@@ -70,9 +73,9 @@ const View = (props) => {
         <div className={style.previewContainer}>
           <div className={style.mark}>
             <span className={style.handle}>
-              <div onClick={() => onPreview(response)}>
+              <span onClick={() => onPreview(response)}>
                 {type ? <DownloadOutlined /> : <EyeOutlined />}
-              </div>
+              </span>
               {onRemove && <DeleteOutlined onClick={() => onRemove(props)} />}
             </span>
           </div>
@@ -84,12 +87,12 @@ const View = (props) => {
   };
 
   const obj = {
-    text: transNode(createIframe(src)),
-    audio: transNode(createIframe(`${src}?autoplay=no`)),
-    video: transNode(createIframe(`${src}?autoplay=no`)),
-    ppt: transNode(createIframe(src)),
-    pdf: transNode(createIframe(src)),
-    image: transNode(<img src={src} />),
+    text: (src) => createIframe(src),
+    audio: (src) => <audio preload='none' controls src={src} />,
+    video: (src) => <video preload='none' controls src={src} />,
+    ppt: (src) => createIframe(src),
+    pdf: (src) => createIframe(src),
+    image: (src) => <img src={src} />,
   };
 
   let Com = null
@@ -111,7 +114,7 @@ const View = (props) => {
     }, 200);
     Com = () => transNode(<canvas width={width} height={height} id={id} />, 'download');
   } else {
-    Com = () => obj[type];
+    Com = () => transNode(obj[type](src));
   }
 
   return <Fragment>
@@ -121,8 +124,9 @@ const View = (props) => {
         <Image src={previewSrc} />
       </Image.PreviewGroup>
     </div>
-    <Modal width={1000} footer={false} title={previewTitle} open={previewModalVisible} onCancel={() => setPreviewModalVisible(false)}>
-      <iframe className={style.iframe} src={previewSrc} />
+    <Modal footer={false} title={previewTitle} open={previewModalVisible} onCancel={() => setPreviewModalVisible(false)}>
+      {/* <iframe className={style.iframe} src={previewSrc} /> */}
+      {obj[type]?.(previewSrc)}
     </Modal>
   </Fragment>
 };

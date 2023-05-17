@@ -1,8 +1,5 @@
 {
   "upload_path": "usr/${username}/upload/${date}/",
-  "config": {
-    "background": []
-  },
   "config_background_path": "usr/${username}/background/",
   "usr_store_json_path": "usr/${username}/store/${date}/content.json",
   "usr_config_json_path": "usr/${username}/config.json"

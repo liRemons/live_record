@@ -12,7 +12,10 @@ const parseContext = (str, data) => {
   return str;
 };
 
+const encodeURL = (url) => url.replace(/\\/g, '/')
+
 
 module.exports = {
-  parseContext
+  parseContext,
+  encodeURL
 }

@@ -13,7 +13,7 @@ const View = ({ onPropsChange, fileList: propsFileList, uploadPath, accept }) =>
     if (propsFileList) {
       setFileList(propsFileList.map(item => ({ ...item, response: item })))
     }
-  }, [])
+  }, [propsFileList])
 
   const onPreview = (data) => {
     const { type, url, name } = data;

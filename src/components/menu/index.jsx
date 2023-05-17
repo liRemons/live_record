@@ -1,5 +1,5 @@
 import React, { useEffect, useState, Fragment, useRef } from "react";
-import debounce from 'lodash.debounce'
+import debounce from 'lodash.debounce';
 import {
   Menu,
   Item,
@@ -10,10 +10,9 @@ import "react-contexify/dist/ReactContexify.css";
 import { contextHanleMenu, winContext } from '../../../utils/renderer';
 import SettingBackground from '../settingBackground';
 
-const MENU_ID = "menu-id";
+const MENU_ID = "container";
 
 export default function App({ children }) {
-  const backgroundRef= useRef(null);
   const [menu, setMenu] = useState([
     { id: 'fullScreen', title: '全屏' },
     { id: 'changeBg', title: '切换背景' },
@@ -104,17 +103,13 @@ export default function App({ children }) {
     });
   }
 
-  const settingBackgrond = () => {
-    const { fileList } = backgroundRef.current;
-    const data = {
-      background: fileList,
-      background_use_uid: fileList[0].uid
-    }
+  const bgCancel = () => {
+    setBgVisible(false)
   }
 
   return (
     <Fragment>
-      <div style={{ height: '100%', overflow: 'auto', padding: '0 20px' }} onContextMenu={displayMenu}>
+      <div style={{ height: '100%', overflow: 'auto'}} onContextMenu={displayMenu}>
         {children}
       </div>
       <Menu id={MENU_ID} animation='slide' theme='dark'>
@@ -124,8 +119,8 @@ export default function App({ children }) {
           </Item>)
         }
       </Menu>
-      <Modal onOk={settingBackgrond} onCancel={() => {setBgVisible(false)}} width={800} open={bgVisible} title='设置背景图'>
-        <SettingBackground ref={backgroundRef} />
+      <Modal destroyOnClose footer={false} onCancel={bgCancel} width={800} open={bgVisible} title='设置背景图'>
+        <SettingBackground onCancel={bgCancel} />
       </Modal>
     </Fragment>
   );
