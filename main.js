@@ -19,6 +19,7 @@ const {
   recordRendJson,
   contextHanleMenu,
   winContext,
+  recordGetFilePath
 } = require('./utils/main');
 const { app, BrowserWindow, globalShortcut, ipcMain } = require('electron');
 
@@ -89,6 +90,7 @@ app.whenReady().then(() => {
     { key: 'recordRemoveSync', cb: recordRemoveSync },
     { key: 'recordWriteJson', cb: recordWriteJson },
     { key: 'recordRendJson', cb: recordRendJson },
+    { key: 'recordGetFilePath', cb: recordGetFilePath },
     { key: 'contextHanleMenu', cb: (e, { key }) => contextHanleMenu({ key, mainWindow }) },
     { key: 'winContext', cb: (e, { key }) => winContext({ key, mainWindow }) },
   ]

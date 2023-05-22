@@ -1,4 +1,4 @@
-import React, { useState, Fragment } from "react";
+import React, { useState, Fragment, forwardRef, useImperativeHandle } from "react";
 import { DeleteOutlined, EyeOutlined, DownloadOutlined } from '@ant-design/icons';
 import { Image, Modal } from 'antd'
 import errSvg from '../../assets/svg/文件.svg';
@@ -8,7 +8,6 @@ const height = window.innerWidth <= 600 ? 100 : 200;
 
 
 const draw = async ({ text, id }) => {
-
   const c = document.getElementById(id);
   if (!c) {
     return null;
@@ -26,18 +25,18 @@ const createIframe = (src) => (
   <iframe scrolling='no' frameBorder={0} src={src} />
 );
 
-const View = (props) => {
-
+const View = forwardRef((props, ref) => {
   const [previewSrc, setPreviewSrc] = useState(null);
   const [previewImgVisible, setPreviewImgVisible] = useState(false);
   const [previewModalVisible, setPreviewModalVisible] = useState(false);
   const [previewTitle, setPreviewTitle] = useState(null);
 
+  
+
   const onPreview = (data) => {
-    const { type, url, name } = data;
-    const src = `file://${url}`;
+    const { type, thumbUrl, name } = data;
     setPreviewTitle(name);
-    setPreviewSrc(src);
+    setPreviewSrc(thumbUrl);
     const handleImg = () => {
       setPreviewImgVisible(true);
     }
@@ -46,7 +45,7 @@ const View = (props) => {
       setPreviewModalVisible(true);
     }
 
-  
+
     const handles = {
       image: handleImg,
       pdf: openDialog,
@@ -64,9 +63,12 @@ const View = (props) => {
     }
   }
 
+  useImperativeHandle(ref, () => ({
+    onPreview
+  }));
+
   const { response, onRemove, eleId } = props;
-  const { type, url, uid = '', name, } = response;
-  const src = `file://${url}`;
+  const { type, thumbUrl, uid = '', name, } = response || {};
   const transNode = (children, type) => {
     return (
       <div className={style.previewBox}>
@@ -97,39 +99,42 @@ const View = (props) => {
 
   let Com = null
 
-  if (!obj[type]) {
-    const id = `canvas${uid}_${eleId || ''}`;
-    const text = url.split('.').length >= 2 ? url.split('.').slice(-1)[0] : '';
-    if (!text) {
-      Com = () => transNode(
-        <img style={{ width: '50px', height: '50px' }} src={errSvg} />
-      );
+  if (thumbUrl && uid) {
+    if (!obj[type]) {
+      const id = `canvas${uid}_${eleId || ''}`;
+      const text = thumbUrl.split('.').length >= 2 ? thumbUrl.split('.').slice(-1)[0] : '';
+      if (!text) {
+        Com = () => transNode(
+          <img style={{ width: '50px', height: '50px' }} src={errSvg} />
+        );
+      }
+      setTimeout(() => {
+        draw({
+          text: thumbUrl.split('.').slice(-1)[0],
+          name,
+          id,
+        });
+      }, 200);
+      Com = () => transNode(<canvas width={width} height={height} id={id} />, 'download');
+    } else {
+      Com = () => transNode(obj[type](thumbUrl));
     }
-    setTimeout(() => {
-      draw({
-        text: url.split('.').slice(-1)[0],
-        name,
-        id,
-      });
-    }, 200);
-    Com = () => transNode(<canvas width={width} height={height} id={id} />, 'download');
-  } else {
-    Com = () => transNode(obj[type](src));
   }
 
+  const { handleType } = props;
+
   return <Fragment>
-    <Com />
+    {handleType !== 'preview' && <Com />}
     <div style={{ display: 'none' }}>
       <Image.PreviewGroup preview={{ visible: previewImgVisible, onVisibleChange: (visible) => setPreviewImgVisible(visible) }}>
         <Image src={previewSrc} />
       </Image.PreviewGroup>
     </div>
     <Modal footer={false} title={previewTitle} open={previewModalVisible} onCancel={() => setPreviewModalVisible(false)}>
-      {/* <iframe className={style.iframe} src={previewSrc} /> */}
       {obj[type]?.(previewSrc)}
     </Modal>
   </Fragment>
-};
+});
 
 
 export default View;

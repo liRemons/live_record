@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useCallback } from "react";
 import Upload from '../upload';
 import { Steps, Button, Empty, Image, Checkbox, message } from 'antd';
-import { parseContext, encodeURL } from '../../../utils';
+import { parseContext } from '../../../utils';
 import { ButtonBar } from 'remons-components';
 import style from './index.module.less';
 import { EyeOutlined } from '@ant-design/icons';
 import config from '../../../electron.config.json';
 import classNames from "classnames";
-import { recordWriteJson, recordRendJson } from '../../../utils/renderer';
+import { recordWriteJson, recordRendJson, recordGetFilePath } from '../../../utils/renderer';
 
 const View = (props) => {
   const [fileList, setFileList] = useState([]);
@@ -17,9 +17,17 @@ const View = (props) => {
   const [activeUid, setActiveUid] = useState('');
 
   useEffect(() => {
-    recordRendJson({ uploadPath: parseContext(config.config_background_path, { username: 'admin' }) }).then(res => {
+    recordRendJson({ uploadPath: parseContext(config.config_background_path, { username: 'admin' }) }).then(async (res) => {
       if (res) {
-        setFileList(res.fileList || [])
+        const promiseAll = res.fileList.map(async (item) => {
+          const thumbUrl =  await recordGetFilePath(item.url);
+          return {
+            thumbUrl,
+            ...item
+          }
+        })
+       const fileList= await Promise.all(promiseAll);
+        setFileList(fileList || [])
         setActiveUid(res.uid)
       }
     });
@@ -31,8 +39,7 @@ const View = (props) => {
   }, [])
 
   const onPreview = (data) => {
-    const src = `file://${data.url}`;
-    setPreviewSrc(src);
+    setPreviewSrc(data.url);
     setPreviewImgVisible(true)
   }
 
@@ -60,7 +67,7 @@ const View = (props) => {
               <EyeOutlined onClick={() => onPreview(item)} />
             </div>
           </div>
-          <img src={`file://${item.url}`} alt="" />
+          <img src={item.thumbUrl} alt="" />
         </div>)
       }
     </div>
@@ -72,7 +79,7 @@ const View = (props) => {
       content: <Upload
         accept='image/*'
         fileList={fileList}
-        onPropsChange={onPropsChange}
+        onChange={onPropsChange}
         uploadPath={`${parseContext(config.config_background_path, { username: 'admin' })}/upload/`}
       />,
     },
@@ -99,7 +106,7 @@ const View = (props) => {
     if (info) {
       document.documentElement.style.setProperty(
         "--bg",
-        `url(${encodeURL(`file://${info.url}`)})`
+        `url(${info.thumbUrl})`
       );
     }
     recordWriteJson({

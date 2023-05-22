@@ -14,6 +14,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   recordRemoveSync: (data) => ipcRenderer.invoke('recordRemoveSync', data),
   recordWriteJson: (data) => ipcRenderer.invoke('recordWriteJson', data),
   recordRendJson: (data) => ipcRenderer.invoke('recordRendJson', data),
+  recordGetFilePath: (data) => ipcRenderer.invoke('recordGetFilePath', data),
   winContext: (data) => ipcRenderer.invoke('winContext', data),
   log: (callback) => ipcRenderer.on('log', callback),
 })

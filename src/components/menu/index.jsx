@@ -10,7 +10,7 @@ import "react-contexify/dist/ReactContexify.css";
 import { contextHanleMenu, winContext } from '../../../utils/renderer';
 import SettingBackground from '../settingBackground';
 
-const MENU_ID = "container";
+const MENU_ID = "menu";
 
 export default function App({ children }) {
   const [menu, setMenu] = useState([
@@ -57,7 +57,7 @@ export default function App({ children }) {
 
   const exportData = (url) => {
     const a = document.createElement('a');
-    a.setAttribute('href', `file://${url}`);
+    a.setAttribute('href', url);
     a.setAttribute('download', 'data.zip');
     a.click()
   }

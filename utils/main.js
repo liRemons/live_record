@@ -2,9 +2,10 @@ const fs = require('fs');
 const path = require('path');
 const electronConfig = require('../electron.config.json');
 const fsExtra = require('fs-extra');
-const { parseContext } = require('./index.js');
-const dayjs = require('dayjs');
+const { parseContext, encodeURL } = require('./index.js');
 const compressing = require('compressing');
+
+const recordGetFilePath = (e, url) => encodeURL(`file://${path.resolve(__dirname, `../${url}`)}`);
 
 const exportData = async () => {
   await fsExtra.copySync(
@@ -25,7 +26,7 @@ const recordUpload = async (
   const copyPath = path.resolve(__dirname, `../${uploadPath}${name}`);
   await fsExtra.copySync(filepath, copyPath);
   return {
-    url: copyPath,
+    url: `/${uploadPath}${name}`,
     status: 'done',
     name,
     uid,
@@ -53,7 +54,7 @@ const recordGetDates = async (e) => {
     let all = res.map((date) => newPromise(date));
     const allRes = await Promise.all(all);
     return allRes.filter((item) => item.flag).map((item) => item.date);
-  } catch (error) {}
+  } catch (error) { }
 };
 
 const recordRemoveSync = async (e, { uploadPath }) => {
@@ -123,4 +124,5 @@ module.exports = {
   recordRendJson,
   contextHanleMenu,
   winContext,
+  recordGetFilePath
 };

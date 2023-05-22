@@ -27,6 +27,10 @@ export const recordRendJson = (params) => {
   return window.electronAPI.recordRendJson(params);
 }
 
+export const recordGetFilePath = (params) => {
+  return window.electronAPI.recordGetFilePath(params);
+}
+
 export const recordGetDates = () => {
   return window.electronAPI.recordGetDates();
 };

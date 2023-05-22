@@ -171,10 +171,10 @@ function View({ date, changeDate, changeDates }) {
         <Input value={title} onChange={changeTitle} placeholder='起个标题吧' />
         <Upload
           fileList={fileList}
-          onPropsChange={onChangeFileList}
+          onChange={onChangeFileList}
           uploadPath={uploadPath(date)}
         />
-        <Editor content={content} onPropsChange={onChangeContent} date={date} />
+        <Editor content={content} onChange={onChangeContent} date={date} />
       </Space>
       <ButtonBar>
         <Button type="primary" onClick={onSubmit}>提交</Button>

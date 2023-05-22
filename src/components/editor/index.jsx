@@ -3,7 +3,7 @@ import '@wangeditor/editor/dist/css/style.css' // 引入 css
 import React, { useState, useEffect, memo } from 'react'
 import { Editor, Toolbar } from '@wangeditor/editor-for-react'
 
-const View = ({ onPropsChange, content }) => {
+const View = ({ onChange: onPropsChange, content }) => {
   // editor 实例
   const [editor, setEditor] = useState(null)
 

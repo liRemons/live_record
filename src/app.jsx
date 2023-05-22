@@ -1,36 +1,46 @@
 import React, { useEffect } from 'react';
 import { ConfigProvider } from 'antd';
 import locale from 'antd/es/locale/zh_CN';
-import './index.less'
+import './index.less';
 import Menu from './components/menu';
-import Record from './pages/record';
+import { useNavigate } from 'react-router';
 import config from '../electron.config.json';
 import { recordRendJson } from '../utils/renderer';
-import { parseContext, encodeURL } from '../utils';
+import { parseContext } from '../utils';
+import Router from './router';
 
 function App() {
-  const settingBackground = () => {
-    recordRendJson({ uploadPath: parseContext(config.config_background_path, { username: 'admin' }) }).then(res => {
-      if (res) {
-        const info = (res.fileList || []).find(el => el.uid === res.uid);
-        if (info) {
-          document.documentElement.style.setProperty(
-            "--bg",
-            `url(${encodeURL(`file://${info.url}`)})`
-          );
-        }
-      }
+  const navigate = useNavigate();
+  const settingBackground = async () => {
+    const res = await recordRendJson({
+      uploadPath: parseContext(config.config_background_path, {
+        username: 'admin'
+      })
     });
+    if (res) {
+      const info = (res.fileList || []).find(el => el.uid === res.uid);
+      if (info) {
+        document.documentElement.style.setProperty(
+          "--bg",
+          `url(${info.url})`
+        );
+      }
+    }
   };
 
 
   useEffect(() => {
-    settingBackground()
-  }, [])
+    settingBackground();
+    // 判断登录态
+    const loginInfo = null;
+    if (!loginInfo) {
+      navigate('/record');
+    };
+  }, []);
 
   return <Menu>
     <ConfigProvider locale={locale}>
-      <Record />
+      <Router />
     </ConfigProvider>
   </Menu>
 }

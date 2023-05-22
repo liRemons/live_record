@@ -112,6 +112,7 @@ const getConfig = ({
       compress: true,
       allowedHosts: 'auto',
       hot: true,
+      historyApiFallback: true,
       client: {
         progress: true,
       },
