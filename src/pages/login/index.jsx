@@ -1,6 +1,6 @@
 import React, { forwardRef, useState, useEffect } from "react";
-import { FormItem } from 'remons-components';
-import { Form, Button, Modal, Avatar, Space, Tabs, Empty, message, List, Popconfirm } from 'antd';
+import { FormItem, ButtonBar } from 'remons-components';
+import { Form, Button, Modal, Avatar, Tabs, Empty, message, List, Popconfirm } from 'antd';
 import Upload from '../../components/upload';
 import { useNavigate } from 'react-router';
 import config from '../../../electron.config.json';
@@ -16,12 +16,6 @@ const Login = () => {
   const [loginForm] = Form.useForm();
   const [userList, setUserList] = useState([])
   const [activeKey, setActiveKeys] = useState('list');
-
-  const rules = [
-    {
-      required: true
-    }
-  ];
 
   const getList = async () => {
     const list = await recordRendJson({ uploadPath: `${config.user_config}userList/`, });
@@ -50,7 +44,6 @@ const Login = () => {
       name: 'name',
       component: 'input',
       required: true,
-      rules,
       normalize: (val) => val.replace(/[^\w_]/g, ''),
       componentProps: {
         placeholder: '可输入下划线、英文、字母，唯一ID不可更改',
@@ -71,7 +64,6 @@ const Login = () => {
     {
       label: '密码',
       name: 'pwd',
-      rules,
       normalize: (val) => val.replace(/[^\w_]/g, ''),
       component: 'inputPassword',
       required: true,
@@ -84,7 +76,6 @@ const Login = () => {
       label: '验证密码',
       name: 'pwdRepeat',
       rules: [
-        ...rules,
         ({ getFieldValue }) => ({
           validator(_, value) {
             if (!value || getFieldValue('pwd') === value) {
@@ -122,13 +113,11 @@ const Login = () => {
       label: '用户名',
       component: 'input',
       name: 'name',
-      rules,
       required: true
     },
     {
       label: '密码',
       component: 'inputPassword',
-      rules,
       name: 'pwd',
       required: true
     }
@@ -168,23 +157,27 @@ const Login = () => {
   }
 
   const login = async () => {
-    const oldList = await getList();
-    const values = await loginForm.validateFields();
-    const info = oldList.find(item => item.name === values.name)
-    if (info) {
-      if (info.password === md5(`${values.pwd}_live_record`)) {
-        message.success('成功');
-        storage.setItem('loginInfo', info)
-        navigate('/')
+    try {
+      const oldList = await getList();
+      const values = await loginForm.validateFields();
+      const info = oldList.find(item => item.name === values.name)
+      if (info) {
+        if (info.password === md5(`${values.pwd}_live_record`)) {
+          message.success('成功');
+          storage.setItem('loginInfo', info)
+          navigate('/')
+        } else {
+          message.error('密码验证失败');
+        }
       } else {
-        message.error('密码验证失败');
+        message.error('暂无此用户')
       }
-    } else {
-      message.error('暂无此用户')
+    } catch (error) {
+      console.log(error);
     }
   }
 
-  const del = (data) => {}
+  const del = (data) => { }
 
   const Layout = {
     labelCol: {
@@ -249,11 +242,11 @@ const Login = () => {
             }
           </Form>
         </div>
-        <Space>
+        <ButtonBar bordered={false} isAffix={false}>
           <Button type='link' icon={<PlusCircleOutlined />} onClick={() => setUserVisible(true)}>新增用户</Button>
           <Button type='primary' onClick={login}>登录</Button>
           <Button type='link' icon={<QuestionCircleOutlined />}>忘记密码</Button>
-        </Space>
+        </ButtonBar>
       </div>
     </div>
 
