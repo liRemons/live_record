@@ -20,7 +20,7 @@ html, body {
   
 }
 
-#container&::before {
+#container::before {
   overflow: hidden;
   content: "";
   position: absolute;
@@ -36,6 +36,10 @@ html, body {
 
 .slide {
   overflow: auto;
+}
+
+.contexify {
+  z-index: 9999;
 }
 
 ::-webkit-scrollbar {

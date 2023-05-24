@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { ConfigProvider } from 'antd';
 import locale from 'antd/es/locale/zh_CN';
-import './index.less';
+import './index.css';
 import Menu from './components/menu';
 import { useNavigate, useLocation } from 'react-router';
 import config from '../electron.config.json';
@@ -43,7 +43,7 @@ function App() {
   const whitePath = ['/login', '/']
 
   return <Menu>
-    <ConfigProvider locale={locale}>
+    <ConfigProvider locale={locale} getPopupContainer={() => document.getElementById('container')}>
      {!whitePath.includes(location.pathname) && <Header />}
       <Router />
     </ConfigProvider>

@@ -1,4 +1,5 @@
 import React, { useEffect, useState, Fragment, useRef } from "react";
+import { createPortal } from 'react-dom';
 import debounce from 'lodash.debounce';
 import {
   Menu,
@@ -109,16 +110,17 @@ export default function App({ children }) {
 
   return (
     <Fragment>
+     
       <div style={{ height: '100%', overflow: 'auto'}} onContextMenu={displayMenu}>
         {children}
       </div>
-      <Menu id={MENU_ID} animation='slide' theme='dark'>
+      {createPortal(<Menu id={MENU_ID} animation='slide' theme='dark'>
         {
           menu.map(item => <Item id={item.id} onClick={handleItemClick}>
             {item.title}
           </Item>)
         }
-      </Menu>
+      </Menu>, document.getElementById(MENU_ID))}
       <Modal destroyOnClose footer={false} onCancel={bgCancel} width={800} open={bgVisible} title='设置背景图'>
         <SettingBackground onCancel={bgCancel} />
       </Modal>

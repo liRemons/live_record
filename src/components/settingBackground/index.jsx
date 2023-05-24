@@ -124,7 +124,7 @@ const View = (props) => {
     {
       steps[stepCurrent].content
     }
-    <ButtonBar bordered={false}>
+    <ButtonBar bordered={false} isAffix={false}>
       {!!stepCurrent && <Button onClick={prev}>上一步</Button>}
       {stepCurrent !== steps.length - 1 && <Button type="primary" onClick={next}>下一步</Button>}
       <Button type="primary" onClick={() => onSubmit(fileList, activeUid)}>确定</Button>
