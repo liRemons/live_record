@@ -176,7 +176,7 @@ function View({ date, changeDate, changeDates }) {
         />
         <Editor content={content} onChange={onChangeContent} date={date} />
       </Space>
-      <ButtonBar>
+      <ButtonBar style={{ background: '#fff', textAlign: 'center' }}>
         <Button type="primary" onClick={onSubmit}>提交</Button>
         <Button onClick={onCancel}>取消</Button>
       </ButtonBar>

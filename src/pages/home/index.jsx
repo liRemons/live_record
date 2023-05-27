@@ -1,13 +1,16 @@
 import React from 'react';
 import { useNavigate } from 'react-router';
 import { Button } from 'antd';
+import { Layout } from 'remons-components';
+import style from './index.module.less';
+
+const { Section } = Layout;
 
 const Home = () => {
   const navigate = useNavigate();
-  return <>
-    <Button onClick={() => navigate('/record')}>记录日常</Button>
-    <Button>电子相册</Button>
-  </>
+  return <div className={style.home}>
+    <Section title='记录日常' onClick={() => navigate('/record')} />
+  </div>
 }
 
 export default Home;

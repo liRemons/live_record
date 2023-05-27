@@ -1,22 +1,23 @@
+@import url('../../assets/css/mixin.less');
 .login {
-    width: 100%;
-    height: 100%;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+
+  .container {
+    padding: 10px;
+    width: 400px;
     display: flex;
-    justify-content: space-around;
     align-items: center;
-    .container {
-        padding: 10px;
-        width: 400px;
-        display: flex;
-        align-items: center;
-        justify-content: space-around;
-        flex-direction: column;
-        height: 280px;
-        border-radius: 8px;
-        background-color: transparent;
-        box-shadow: 5px 5px 10px rgb(166, 166, 166), 5px 5px 10px #5b5b5b60;
-        .form {
-            width: 350px;
-        }
+    justify-content: space-around;
+    flex-direction: column;
+    height: 280px;
+    border-radius: 8px;
+    .filter();
+    .form {
+      width: 350px;
     }
+  }
 }

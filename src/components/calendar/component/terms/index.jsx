@@ -107,11 +107,13 @@ function View({ term }) {
     return null;
   }
   return <div className={style.terms}>
-    <div className={style.title}>
-      {term}
-    </div>
-    <div className={style.content}>
-      {info.content}
+    <div className={style.container}>
+      <div className={style.content}>
+        {info.content}
+      </div>
+      <div className={style.title}>
+        {term}
+      </div>
     </div>
   </div>
 }

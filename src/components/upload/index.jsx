@@ -116,6 +116,8 @@ const View = ({ onChange: onPropsChange, fileList: propsFileList, uploadPath, li
     </Upload>
   }
 
+  console.log(listType);
+
   return <>
     {listType === 'dragger' ? renderDragger() : renderUpload()}
     <Preview ref={previewRef} handleType='preview' />

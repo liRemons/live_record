@@ -116,7 +116,7 @@ const rules = ({ isEnvDevelopment }) => [
       },
       // Other resources
       {
-        test: /\.(pdf|doc|node|svg|woff2)$/,
+        test: /\.(pdf|doc|node|svg|woff2|ttf)$/,
         use: [
           {
             loader: 'file-loader',

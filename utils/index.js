@@ -24,13 +24,16 @@ const extname = (url) => {
 const isImageFileType = (type) => type.indexOf('image') === 0;
 
 const isImageUrl = (file) => {
-  if(!file) {
+  if(!file || file.status !== 'done') {
     return false
   }
   if (file.type) {
     return isImageFileType(file.type);
   }
-  const url = (file.thumbUrl || file.url);
+
+  const response = file.response;
+
+  const url = (file.thumbUrl || file.url || response.thumbUrl || response.url);
   const extension = extname(url);
   if (
     /^data:image\//.test(url) ||

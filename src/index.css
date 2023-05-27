@@ -31,15 +31,28 @@ html, body {
   z-index: -1;
   background-size: contain;
   background-image: var(--bg);
-  filter: blur(8px);
+}
+
+.app_container {
+  height: 100%;
+  width: 100%;
+}
+
+.header {
+  position: absolute;
+  top: 0;
+  z-index: 2;
+}
+
+.main {
+  padding-top: 80px;
+  padding-bottom: 20px;
+  width: 100%;
+  overflow: auto;
 }
 
 .slide {
   overflow: auto;
-}
-
-.contexify {
-  z-index: 9999;
 }
 
 ::-webkit-scrollbar {

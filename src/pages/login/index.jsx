@@ -51,8 +51,8 @@ const Login = () => {
       label: '昵称/用户名',
       name: 'nickName',
       component: 'input',
+      placeholder: '请输入昵称/用户名',
       componentProps: {
-        placeholder: '请输入昵称/用户名',
         maxLength: 20,
         showCount: true
       }
@@ -64,8 +64,8 @@ const Login = () => {
       normalize: (val) => val.replace(/[^\w_]/g, ''),
       component: 'inputPassword',
       required: true,
+      placeholder: '请设置 20 位以内密码，下划线、英文、字母',
       componentProps: {
-        placeholder: '请设置 20 位以内密码，下划线、英文、字母',
         maxLength: 20,
       }
     },
@@ -87,8 +87,8 @@ const Login = () => {
       normalize: (val) => val.replace(/[^\w_]/g, ''),
       component: 'inputPassword',
       required: true,
+      placeholder: '再次输入密码',
       componentProps: {
-        placeholder: '再次输入密码',
         maxLength: 20,
       }
     },
@@ -110,18 +110,14 @@ const Login = () => {
       component: 'input',
       name: 'question_1',
       required: true,
-      componentProps: {
-        placeholder: '用于找回密码'
-      }
+      placeholder: '用于找回密码'
     },
     {
       label: '问题2',
       component: 'input',
       name: 'question_2',
       required: true,
-      componentProps: {
-        placeholder: '用于找回密码'
-      }
+      placeholder: '用于找回密码'
     },
     {
       isShow: handleType === 'edit',
@@ -143,9 +139,9 @@ const Login = () => {
           message: '请输入昵称/用户名'
         }
       ],
+      placeholder: '请输入昵称/用户名',
       componentProps: {
         prefix: <UserOutlined />,
-        placeholder: '请输入昵称/用户名'
       }
     },
     {
@@ -159,9 +155,9 @@ const Login = () => {
         }
       ],
       required: true,
+      placeholder: '请输入密码',
       componentProps: {
         prefix: <LockOutlined />,
-        placeholder: '请输入密码'
       }
     },
 
@@ -185,8 +181,8 @@ const Login = () => {
       normalize: (val) => val.replace(/[^\w_]/g, ''),
       name: 'oldPwd',
       required: true,
+      placeholder: '请输入旧密码',
       componentProps: {
-        placeholder: '请输入旧密码',
         maxLength: 20,
       }
     },
@@ -206,9 +202,7 @@ const Login = () => {
       isShow: editHandleType === 'forget',
       component: 'input',
       name: 'nickName',
-      componentProps: {
-        placeholder: '请输入要找回密码的用户名/昵称'
-      }
+      placeholder: '请输入要找回密码的用户名/昵称'
     },
     {
       label: '问题1',
@@ -227,9 +221,7 @@ const Login = () => {
       isShow: editHandleType === 'forget',
       component: 'input',
       name: 'question_1',
-      componentProps: {
-        placeholder: '用于找回密码'
-      }
+      placeholder: '用于找回密码'
     },
     {
       label: '问题2',
@@ -248,9 +240,7 @@ const Login = () => {
       component: 'input',
       isShow: editHandleType === 'forget',
       name: 'question_2',
-      componentProps: {
-        placeholder: '用于找回密码'
-      }
+      placeholder: '用于找回密码'
     },
     {
       label: '新密码',
@@ -258,8 +248,8 @@ const Login = () => {
       normalize: (val) => val.replace(/[^\w_]/g, ''),
       component: 'inputPassword',
       required: true,
+      placeholder: '请设置 20 位以内密码，下划线、英文、字母',
       componentProps: {
-        placeholder: '请设置 20 位以内密码，下划线、英文、字母',
         maxLength: 20,
       }
     },
@@ -280,8 +270,8 @@ const Login = () => {
       normalize: (val) => val.replace(/[^\w_]/g, ''),
       component: 'inputPassword',
       required: true,
+      placeholder: '再次输入密码',
       componentProps: {
-        placeholder: '再次输入密码',
         maxLength: 20,
       }
     },

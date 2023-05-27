@@ -1,4 +1,4 @@
-import React, { useEffect, useState, Fragment, useRef } from "react";
+import React, { useEffect, useState, Fragment } from "react";
 import { createPortal } from 'react-dom';
 import debounce from 'lodash.debounce';
 import {
@@ -6,20 +6,25 @@ import {
   Item,
   useContextMenu
 } from "react-contexify";
+import { useNavigate } from 'react-router';
 import { message, Modal } from 'antd';
 import "react-contexify/dist/ReactContexify.css";
-import { contextHanleMenu, winContext } from '../../../utils/renderer';
+import './index.css';
+import { contextHanleMenu, winContext, storage } from '../../../utils/renderer';
 import SettingBackground from '../settingBackground';
+import { ExclamationCircleFilled } from '@ant-design/icons'
+const { confirm } = Modal;
 
 const MENU_ID = "menu";
 
 export default function App({ children }) {
+  const navigate = useNavigate();
   const [menu, setMenu] = useState([
     { id: 'fullScreen', title: '全屏' },
     { id: 'changeBg', title: '切换背景' },
     { id: 'reload', title: '刷新' },
     { id: 'openTool', title: '打开控制台' },
-    { id: 'changeUser', title: '切换用户' },
+    { id: 'loginOut', title: '退出登录' },
     { id: 'exportData', title: '导出数据' },
   ]);
 
@@ -67,6 +72,18 @@ export default function App({ children }) {
     setBgVisible(true)
   }
 
+  const loginOut = () => {
+    confirm({
+      title: '确定要退出吗?',
+      icon: <ExclamationCircleFilled />,
+      onOk: async () => {
+        await storage.removeItem('loginInfo')
+        navigate('/login')
+      },
+      onCancel() { },
+    });
+  }
+
   const handleItemClick = async (data) => {
     const { id } = data;
     const handleMap = {
@@ -76,7 +93,7 @@ export default function App({ children }) {
       reload: 'reload',
       openTool: 'openTool',
       closeTool: 'closeTool',
-      changeUser: '',
+      loginOut,
       exportData: 'exportData'
     }
 
