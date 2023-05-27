@@ -290,7 +290,7 @@ const Login = () => {
         const { pwd, pwdRepeat, ...others } = newValues;
         const params = {
           password: md5(`${pwd}_live_record`),
-          uuid: uuid(),
+          uid: uuid(),
           ...others
         };
         if (oldList.find(item => item.nickName === params.nickName)) {
@@ -304,7 +304,7 @@ const Login = () => {
       } else {
         const { pwd, pwdRepeat, ...others } = newValues;
         oldList.forEach(item => {
-          if (item.uuid === userInfo.uuid) {
+          if (item.uid === userInfo.uid) {
             Object.assign(item, others)
           }
         });
@@ -334,7 +334,7 @@ const Login = () => {
       if (info) {
         if (info.password === md5(`${values.pwd}_live_record`)) {
           message.success('成功');
-          storage.setItem('loginInfo', info)
+          await storage.setItem('loginInfo', info)
           navigate('/')
         } else {
           message.error('密码验证失败');
@@ -350,7 +350,7 @@ const Login = () => {
   const del = async (data) => {
     const list = await getList();
     const newList = JSON.parse(JSON.stringify(list))
-    const findIndex = newList.findIndex(item => item.uuid === data.uuid);
+    const findIndex = newList.findIndex(item => item.uid === data.uid);
     if (findIndex !== -1) {
       newList.splice(1, findIndex);
     };
@@ -363,7 +363,7 @@ const Login = () => {
   }
 
   const edit = (data) => {
-    const { uuid, password, ...others } = data;
+    const { uid, password, ...others } = data;
     setActiveKeys('add');
     setHandleType('edit');
     addForm.setFieldsValue(others);
@@ -417,7 +417,7 @@ const Login = () => {
       key: 'add',
       children: <Form {...Layout} form={addForm}>
         {
-          addUserItems.map(item => <FormItem {...item} />)
+          addUserItems.map(item => <FormItem key={item.name} {...item} />)
         }
       </Form>
     },
@@ -433,7 +433,7 @@ const Login = () => {
         userInfo = oldList.find(item => item.nickName === values.nickName) || {}
       }
       oldList.forEach(item => {
-        if (item.uuid === userInfo.uuid) {
+        if (item.uid === userInfo.uid) {
           item.password = md5(`${pwd}_live_record`);
         }
       });
@@ -443,7 +443,7 @@ const Login = () => {
       });
       message.success('成功');
       setEditPwdVisible(false);
-      setUserInfo(oldList.find(item => item.uuid === userInfo.uuid))
+      setUserInfo(oldList.find(item => item.uid === userInfo.uid))
     } catch (error) {
 
     }
@@ -454,6 +454,19 @@ const Login = () => {
     setEditHandleType('forget');
   }
 
+  const onKeyDown = (e) => {
+    if (e.keyCode === 13) {
+      login();
+    }
+  }
+
+  useEffect(() => {
+    window.addEventListener('keydown', onKeyDown);
+    return () => {
+      window.removeEventListener('keydown', onKeyDown)
+    }
+  }, [])
+
   return <>
     <div className={style.login}>
       <div className={style.container}>
@@ -461,7 +474,7 @@ const Login = () => {
         <div className={style.form}>
           <Form form={loginForm}>
             {
-              loginItems.map(item => <FormItem {...item} />)
+              loginItems.map(item => <FormItem key={item.name} {...item} />)
             }
           </Form>
         </div>
@@ -470,7 +483,7 @@ const Login = () => {
             setUserVisible(true);
             setHandleType('add')
           }}>新增用户</Button>
-          <Button type='primary' onClick={login}>登录</Button>
+          <Button type='primary' onClick={login} onKeyDown={onKeyDown}>登录</Button>
           <Button type='link' onClick={forgetPwd} icon={<QuestionCircleOutlined />}>忘记密码</Button>
         </ButtonBar>
       </div>
@@ -482,7 +495,7 @@ const Login = () => {
     <Modal destroyOnClose title={editHandleType === 'edit' ? '修改密码' : '忘记密码'} open={editPwdVisible} onOk={editPassword} onCancel={() => setEditPwdVisible(false)}>
       <Form {...Layout} form={forgetForm}>
         {
-          forgetPwdItems.map(item => <FormItem {...item} />)
+          forgetPwdItems.map(item => <FormItem key={item.name} {...item} />)
         }
       </Form>
       <Modal>

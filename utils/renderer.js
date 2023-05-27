@@ -1,5 +1,5 @@
 
-import config from '../electron.config.json'
+import config from '../electron.config.json';
 
 window.electronAPI.log &&
   window.electronAPI.log((e, value) => {
@@ -34,8 +34,8 @@ export const recordGetFilePath = (params) => {
   return window.electronAPI.recordGetFilePath(params);
 }
 
-export const recordGetDates = () => {
-  return window.electronAPI.recordGetDates();
+export const recordGetDates = (params) => {
+  return window.electronAPI.recordGetDates(params);
 };
 
 class Store {
@@ -59,6 +59,4 @@ class Store {
   }
 }
 
-export const storage = new Store
-
-
+export const storage = new Store;

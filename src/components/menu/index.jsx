@@ -6,7 +6,7 @@ import {
   Item,
   useContextMenu
 } from "react-contexify";
-import { useNavigate } from 'react-router';
+import { useNavigate, useLocation } from 'react-router';
 import { message, Modal } from 'antd';
 import "react-contexify/dist/ReactContexify.css";
 import './index.css';
@@ -19,18 +19,20 @@ const MENU_ID = "menu";
 
 export default function App({ children }) {
   const navigate = useNavigate();
-  const [menu, setMenu] = useState([
-    { id: 'fullScreen', title: '全屏' },
-    { id: 'changeBg', title: '切换背景' },
-    { id: 'reload', title: '刷新' },
-    { id: 'openTool', title: '打开控制台' },
-    { id: 'loginOut', title: '退出登录' },
-    { id: 'exportData', title: '导出数据' },
-  ]);
-
+  const location = useLocation();
+  const { pathname } = location;
+  const [menu, setMenu] = useState([]);
   const [bgVisible, setBgVisible] = useState(false);
 
   const resetMenu = async () => {
+    const menu = [
+      { id: 'fullScreen', title: '全屏' },
+      { id: 'changeBg', title: '切换背景', isShow: !['/login'].includes(pathname) },
+      { id: 'reload', title: '刷新' },
+      { id: 'openTool', title: '打开控制台' },
+      { id: 'loginOut', title: '退出登录', isShow: !['/login'].includes(pathname) },
+      { id: 'exportData', title: '导出数据' },
+    ].filter(item => item.isShow !== false);
     const isDevToolsOpened = await winContext({ key: 'isDevToolsOpened' });
     const isFullScreen = await winContext({ key: 'isFullScreen' });
     const isMinimized = await winContext({ key: 'isMinimized' });
@@ -54,7 +56,7 @@ export default function App({ children }) {
       resetMenu()
     }, 500));
     resetMenu()
-  }, []);
+  }, [pathname]);
 
   const { show } = useContextMenu({
     id: MENU_ID
@@ -85,6 +87,7 @@ export default function App({ children }) {
   }
 
   const handleItemClick = async (data) => {
+    const userInfo = await storage.getItem('loginInfo') || {};
     const { id } = data;
     const handleMap = {
       fullScreen: 'fullScreen',
@@ -102,7 +105,7 @@ export default function App({ children }) {
         const cbMap = {
           exportData
         }
-        const res = await contextHanleMenu({ key: id });
+        const res = await contextHanleMenu({ key: id, username: userInfo.uid });
         if (cbMap[id]) {
           cbMap[id](res)
         }
@@ -127,8 +130,7 @@ export default function App({ children }) {
 
   return (
     <Fragment>
-     
-      <div style={{ height: '100%', overflow: 'auto'}} onContextMenu={displayMenu}>
+      <div style={{ height: '100%', overflow: 'auto' }} onContextMenu={displayMenu}>
         {children}
       </div>
       {createPortal(<Menu id={MENU_ID} animation='slide' theme='dark'>

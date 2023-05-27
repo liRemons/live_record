@@ -30,7 +30,6 @@ const View = ({ onChange: onPropsChange, fileList: propsFileList, uploadPath, li
   }
 
   useEffect(() => {
-    console.log();
     if (propsFileList) {
       init()
     }
@@ -115,8 +114,6 @@ const View = ({ onChange: onPropsChange, fileList: propsFileList, uploadPath, li
       {fileList.length >= others.maxCount ? null : <PlusOutlined />}
     </Upload>
   }
-
-  console.log(listType);
 
   return <>
     {listType === 'dragger' ? renderDragger() : renderUpload()}

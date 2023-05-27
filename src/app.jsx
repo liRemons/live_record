@@ -3,6 +3,7 @@ import { ConfigProvider } from 'antd';
 import locale from 'antd/es/locale/zh_CN';
 import './index.css';
 import Menu from './components/menu';
+import FixedButton from './components/fixedButton';
 import { useNavigate, useLocation } from 'react-router';
 import config from '../electron.config.json';
 import { recordRendJson, storage, recordGetFilePath } from '../utils/renderer';
@@ -13,40 +14,46 @@ import Header from './components/header';
 function App() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [userInfo, setUserInfo] = useState(null);
-  const settingBackground = async () => {
-    // const username = await storage.getItem('loginInfo')
+  const [userInfo, setUserInfo] = useState({});
+
+  const settingBackground = async (userInfo) => {
     const res = await recordRendJson({
       uploadPath: parseContext(config.config_background_path, {
-        username: 'admin'
+        username: userInfo.uid
       })
     });
-    if (res) {
-      const info = (res.fileList || []).find(el => el.uid === res.uid);
-      if (info) {
-        const url = await recordGetFilePath(info.url)
-        document.documentElement.style.setProperty(
-          "--bg",
-          `url(${url})`
-        );
-      }
-    }
+    const info = (res?.fileList || []).find(el => el.uid === res.uid) || {};
+    const url = await recordGetFilePath(info.url)
+    document.documentElement.style.setProperty(
+      "--bg",
+      `url(${url})`
+    );
   };
+
+  const getUserInfo = async () => {
+    const userInfo = await storage.getItem('loginInfo') || {};
+    setUserInfo(userInfo);
+    settingBackground(userInfo);
+    return userInfo;
+  }
+
+  useEffect(() => {
+    getUserInfo();
+  }, [location.pathname])
+
 
 
   useEffect(async () => {
-    settingBackground();
     // 判断登录态
-    const loginInfo = await storage.getItem('loginInfo');
-    setUserInfo(loginInfo);
-    if (!loginInfo) {
+    const userInfo = await getUserInfo()
+    if (!userInfo.uid) {
       navigate('/login');
     } else {
-      navigate('/');
+      navigate(location.pathname || '/');
     };
   }, []);
 
-  const whitePath = ['/login']
+  const whitePath = ['/login'];
 
   return <Menu>
     <ConfigProvider locale={locale} getPopupContainer={() => document.getElementById('container')}>
@@ -56,6 +63,7 @@ function App() {
           <Router />
         </div>
       </div>
+      <FixedButton />
     </ConfigProvider>
   </Menu>
 }

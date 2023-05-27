@@ -9,7 +9,7 @@ import Editor from '../editor/index';
 import { FormOutlined } from '@ant-design/icons';
 import { parseContext } from '../../../utils';
 import config from '../../../electron.config.json'
-import { recordRemoveSync, recordRendJson, recordWriteJson } from '../../../utils/renderer';
+import { recordRemoveSync, recordRendJson, recordWriteJson, storage } from '../../../utils/renderer';
 
 import style from './index.module.less'
 
@@ -24,16 +24,27 @@ function View({ date, changeDate, changeDates }) {
   const [fileList, setFileList] = useState([]);
   const [handleType, setHandleType] = useState(null);
   const [activeKeys, setActiveKeys] = useState([]);
+  const [userInfo, setUserInfo] = useState({});
+
+  const getUserInfo = async () => {
+    const userInfo = await storage.getItem('loginInfo') || {};
+    setUserInfo(userInfo);
+  }
+
+
+  useEffect(() => {
+    getUserInfo();
+  }, [])
 
   const uploadPath = (date) => {
-    return parseContext(config.upload_path, { username: 'admin', date: dayjs(date).valueOf() })
+    return parseContext(config.upload_path, { username: userInfo.uid, date: dayjs(date).valueOf() })
   }
 
 
   const onChangeCollapse = async (keys) => {
     setActiveKeys([...keys]);
     if (keys.length) {
-      const res = await recordRendJson({ uploadPath:uploadPath(dayjs(+keys[0]).format('YYYY-MM-DD'))  });
+      const res = await recordRendJson({ uploadPath: uploadPath(dayjs(+keys[0]).format('YYYY-MM-DD')) });
       dates.forEach(item => {
         if (+item.value === +keys[0]) {
           item.data = res;
@@ -91,7 +102,7 @@ function View({ date, changeDate, changeDates }) {
 
   const init = async () => {
     setActiveKeys([])
-    const res = await recordGetDates();
+    const res = await recordGetDates({ username: userInfo.uid });
     changeDates(res)
     const data = (res || []).map(item => ({ value: +item, date: dayjs(+item).format('YYYY-MM-DD') }));
     let formatterDates = [];
@@ -115,7 +126,7 @@ function View({ date, changeDate, changeDates }) {
 
   useEffect(() => {
     init()
-  }, [date]);
+  }, [date, userInfo]);
 
 
   const onCancel = () => {

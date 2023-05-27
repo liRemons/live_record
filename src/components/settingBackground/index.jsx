@@ -7,7 +7,7 @@ import style from './index.module.less';
 import { EyeOutlined } from '@ant-design/icons';
 import config from '../../../electron.config.json';
 import classNames from "classnames";
-import { recordWriteJson, recordRendJson, recordGetFilePath } from '../../../utils/renderer';
+import { recordWriteJson, recordRendJson, recordGetFilePath, storage } from '../../../utils/renderer';
 
 const View = (props) => {
   const [fileList, setFileList] = useState([]);
@@ -15,23 +15,34 @@ const View = (props) => {
   const [previewSrc, setPreviewSrc] = useState('')
   const [previewImgVisible, setPreviewImgVisible] = useState(false);
   const [activeUid, setActiveUid] = useState('');
+  const [userInfo, setUserInfo] = useState({});
+
+  const getUserInfo = async () => {
+    const userInfo = await storage.getItem('loginInfo') || {};
+    setUserInfo(userInfo)
+  }
 
   useEffect(() => {
-    recordRendJson({ uploadPath: parseContext(config.config_background_path, { username: 'admin' }) }).then(async (res) => {
+    getUserInfo();
+  }, [])
+
+
+  useEffect(async () => {
+    recordRendJson({ uploadPath: parseContext(config.config_background_path, { username: userInfo.uid }) }).then(async (res) => {
       if (res) {
         const promiseAll = res.fileList.map(async (item) => {
-          const thumbUrl =  await recordGetFilePath(item.url);
+          const thumbUrl = await recordGetFilePath(item.url);
           return {
             thumbUrl,
             ...item
           }
         })
-       const fileList= await Promise.all(promiseAll);
+        const fileList = await Promise.all(promiseAll);
         setFileList(fileList || [])
         setActiveUid(res.uid)
       }
     });
-  }, [])
+  }, [userInfo])
 
 
   const onPropsChange = useCallback((fileList) => {
@@ -80,7 +91,7 @@ const View = (props) => {
         accept='image/*'
         fileList={fileList}
         onChange={onPropsChange}
-        uploadPath={`${parseContext(config.config_background_path, { username: 'admin' })}/upload/`}
+        uploadPath={`${parseContext(config.config_background_path, { username: userInfo.uid })}/upload/`}
       />,
     },
     {
@@ -110,7 +121,7 @@ const View = (props) => {
       );
     }
     recordWriteJson({
-      uploadPath: parseContext(config.config_background_path, { username: 'admin' }),
+      uploadPath: parseContext(config.config_background_path, { username: userInfo.uid }),
       data: {
         fileList: fileList,
         uid,

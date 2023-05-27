@@ -91,8 +91,8 @@ app.whenReady().then(() => {
     { key: 'recordWriteJson', cb: recordWriteJson },
     { key: 'recordRendJson', cb: recordRendJson },
     { key: 'recordGetFilePath', cb: recordGetFilePath },
-    { key: 'contextHanleMenu', cb: (e, { key }) => contextHanleMenu({ key, mainWindow }) },
-    { key: 'winContext', cb: (e, { key }) => winContext({ key, mainWindow }) },
+    { key: 'contextHanleMenu', cb: (e, params = {}) => contextHanleMenu({ ...params, mainWindow }) },
+    { key: 'winContext', cb: (e, params = {}) => winContext({ ...params, mainWindow }) },
   ]
 
   handles.forEach(item => {

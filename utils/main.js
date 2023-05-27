@@ -5,12 +5,12 @@ const fsExtra = require('fs-extra');
 const { parseContext, encodeURL } = require('./index.js');
 const compressing = require('compressing');
 
-const recordGetFilePath = (e, url) => encodeURL(`file://${path.resolve(__dirname, `../${url}`)}`);
+const recordGetFilePath = (e, url) => url && encodeURL(`file://${path.resolve(__dirname, `../${url}`)}`);
 
-const exportData = async () => {
+const exportData = async (e, { username }) => {
   await fsExtra.copySync(
     'electron.config.json',
-    'usr/admin/electron.config.json'
+    `usr/${username}/electron.config.json`
   );
   await compressing.zip.compressDir(
     path.resolve(__dirname, '../usr'),
@@ -34,9 +34,9 @@ const recordUpload = async (
   };
 };
 
-const recordGetDates = async (e) => {
+const recordGetDates = async (e, { username }) => {
   const uploadPath = parseContext(electronConfig.upload_path, {
-    username: 'admin',
+    username,
     date: '/',
   });
   try {
@@ -88,7 +88,7 @@ const recordRendJson = async (e, { uploadPath }) => {
   }
 };
 
-const contextHanleMenu = async ({ key, mainWindow }) => {
+const contextHanleMenu = async ({ key, mainWindow, username }) => {
   const handleMap = {
     fullScreen: () => mainWindow.setFullScreen(true),
     notFullScreen: () => mainWindow.setFullScreen(false),
@@ -99,7 +99,7 @@ const contextHanleMenu = async ({ key, mainWindow }) => {
   };
 
   if (handleMap[key]) {
-    return handleMap[key]();
+    return handleMap[key]({ username });
   }
 };
 
