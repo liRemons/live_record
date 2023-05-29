@@ -35,7 +35,7 @@ const recordUpload = async (
 };
 
 const recordGetDates = async (e, { username }) => {
-  const uploadPath = parseContext(electronConfig.upload_path, {
+  const uploadPath = parseContext(electronConfig.life_notes_upload, {
     username,
     date: '/',
   });

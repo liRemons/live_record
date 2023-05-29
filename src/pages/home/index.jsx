@@ -8,7 +8,8 @@ const { Section } = Layout;
 const Home = () => {
   const navigate = useNavigate();
   return <div className={style.home}>
-    <Section title='记录日常' onClick={() => navigate('/record')} />
+    <Section title='生活小记' onClick={() => navigate('/record')} />
+    <Section title='电子相册' onClick={() => navigate('/photo')} />
   </div>
 }
 

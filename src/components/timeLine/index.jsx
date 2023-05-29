@@ -1,19 +1,19 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Steps, Collapse, Empty, Button, Input, Space, Drawer } from 'antd'
+import { Steps, Collapse, Empty, Button, Input, Space, Drawer, Modal } from 'antd'
 import { recordGetDates } from '../../../utils/renderer';
-import { ButtonBar } from 'remons-components';
+import { ButtonBar, ActionList } from 'remons-components';
 import dayjs from 'dayjs';
 import Preview from '../preview';
 import Upload from '../upload/index';
 import Editor from '../editor/index';
-import { FormOutlined } from '@ant-design/icons';
+import { FormOutlined, DeleteOutlined, ExclamationCircleFilled } from '@ant-design/icons';
 import { parseContext } from '../../../utils';
 import config from '../../../electron.config.json'
 import { recordRemoveSync, recordRendJson, recordWriteJson, storage } from '../../../utils/renderer';
-
-import style from './index.module.less'
+import style from './index.module.less';
 
 const { Panel } = Collapse;
+const { confirm } = Modal;
 
 function View({ date, changeDate, changeDates }) {
   const [dates, setDates] = useState([]);
@@ -37,7 +37,7 @@ function View({ date, changeDate, changeDates }) {
   }, [])
 
   const uploadPath = (date) => {
-    return parseContext(config.upload_path, { username: userInfo.uid, date: dayjs(date).valueOf() })
+    return parseContext(config.life_notes_upload, { username: userInfo.uid, date: dayjs(date).valueOf() })
   }
 
 
@@ -55,8 +55,7 @@ function View({ date, changeDate, changeDates }) {
   }
 
 
-  const handleClick = async (e, data) => {
-    e.stopPropagation();
+  const edit = async (data) => {
     const info = await recordRendJson({ uploadPath: uploadPath(data.value) });
     if (info) {
       setFileList(info.fileList);
@@ -69,6 +68,22 @@ function View({ date, changeDate, changeDates }) {
     }
   }
 
+  const del = (data) => {
+    confirm({
+      title: '确认删除？',
+      icon: <ExclamationCircleFilled />,
+      content: '删除后不可恢复！！！',
+      onOk: async () => {
+        await recordRemoveSync({
+          uploadPath: uploadPath(data.date)
+        });
+        init();
+      },
+      onCancel() {
+      },
+    });
+  }
+
 
   const create = () => {
     setFileList([]);
@@ -79,8 +94,29 @@ function View({ date, changeDate, changeDates }) {
     setHandleType('create');
   }
 
+  const onActionClick = (key, data) => {
+    const handleMap = {
+      edit,
+      del,
+    }
+    handleMap[key] && handleMap[key](data)
+  }
+
 
   const renderDescription = (data) => {
+    const actions = [
+      {
+        key: 'edit',
+        type: 'link',
+        icon: <FormOutlined />,
+      },
+      {
+        key: 'del',
+        type: 'link',
+        danger: true,
+        icon: <DeleteOutlined />,
+      },
+    ]
     const { data: info = {} } = data;
     return data.type === 'empty'
       ? <Empty
@@ -90,7 +126,7 @@ function View({ date, changeDate, changeDates }) {
         <Button type='primary' onClick={create}>记录一下</Button>
       </Empty>
       : <Collapse accordion activeKey={activeKeys} size="small" onChange={onChangeCollapse}>
-        <Panel header={data.date} extra={<FormOutlined onClick={(e) => handleClick(e, data)} />} key={`${data.value}`}>
+        <Panel header={data.date} collapsible='icon' extra={<ActionList actions={actions} onActionClick={(key) => onActionClick(key, data)} />} key={`${data.value}`}>
           <div className={style.title}>{info.title}</div>
           <div className={style.content}> {info.contentText}</div>
           <div className={style.preview}> {
