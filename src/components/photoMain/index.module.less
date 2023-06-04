@@ -1,0 +1,54 @@
+.content {
+  height: 100%;
+  position: relative;
+
+  .icon {
+    color: #1677ff;
+    position: absolute;
+    cursor: pointer;
+    display: none;
+  }
+
+}
+
+.popover {
+  max-height: 200px;
+  overflow: auto;
+}
+
+.handleItem {
+  margin-bottom: 4px;
+  color: #1677ffa5;
+  display: flex;
+  align-items: center;
+
+  .label {
+    background: #a4d8ff6e;
+    border-radius: 6px;
+    flex-grow: 0;
+    flex-shrink: 0;
+    width: 100px;
+    height: 28px;
+    line-height: 28px;
+    text-align: center;
+    margin-right: 2px;
+  }
+}
+
+:global {
+  .react-grid-item {
+    border: 1px dashed #1677ff;
+
+    .react-resizable-handle {
+      padding: 0;
+    }
+
+    &>.react-resizable-handle::after {
+      display: none;
+    }
+  }
+
+  .react-grid-item.react-grid-placeholder {
+    background: #a4d8ff;
+  }
+}

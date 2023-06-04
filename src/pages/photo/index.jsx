@@ -1,25 +1,27 @@
 import React from "react";
 import style from './index.module.less';
 import FloatButton from '../../components/floatButton';
+import PhotoMain from '../../components/photoMain';
 import {
   DeleteOutlined,
   CaretUpOutlined,
   CaretDownOutlined,
   FilePdfOutlined,
   ForwardOutlined,
-  PicLeftOutlined,
   FormOutlined,
   CloudUploadOutlined,
   FontSizeOutlined,
-  FileZipOutlined
+  FileZipOutlined,
+  PlusCircleOutlined,
+  PlusOutlined
 } from '@ant-design/icons';
 const View = () => {
   const btns1 = [
     {
       children: [
         {
-          tooltip: '选择模板',
-          icon: <PicLeftOutlined />,
+          tooltip: '新增组件',
+          icon: <PlusOutlined />
         },
         {
           tooltip: '上传图片',
@@ -36,10 +38,7 @@ const View = () => {
           key: 'text',
           icon: <FontSizeOutlined />
         },
-        {
-          tooltip: '删除本页',
-          icon: <DeleteOutlined />,
-        },
+        
         {
           tooltip: '导出本页',
           icon: <FilePdfOutlined />,
@@ -57,6 +56,10 @@ const View = () => {
     {
       children: [
         {
+          tooltip: '新增一页',
+          icon: <PlusCircleOutlined />
+        },
+        {
           tooltip: '上一页',
           icon: <CaretUpOutlined />,
         },
@@ -72,6 +75,11 @@ const View = () => {
           tooltip: '快速跳转',
           icon: <ForwardOutlined />,
         },
+        {
+          tooltip: '删除本页',
+          icon: <DeleteOutlined />,
+        },
+        
       ]
     }
 
@@ -83,7 +91,9 @@ const View = () => {
       <FloatButton components={btns1} shape="square" right={20} fixReference='top' position='absolute' />
     </div>
 
-    <div className={style.main}></div>
+    <div className={style.main}>
+      <PhotoMain />
+    </div>
     <div className={style.handle}>
       <FloatButton components={btns2} shape="square" left={20} fixReference='top' position='absolute' />
     </div>

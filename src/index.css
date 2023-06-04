@@ -48,6 +48,7 @@ html, body {
   padding-top: 80px;
   padding-bottom: 20px;
   width: 100%;
+  height: calc(100% - 100px);
   overflow: auto;
 }
 
