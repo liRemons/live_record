@@ -95,7 +95,7 @@ const Login = () => {
     {
       label: '头像',
       name: 'avatar',
-      component: forwardRef((props) => <Upload {...props} />),
+      component: forwardRef((props, ref) => <Upload ref={ref} {...props} />),
       valuePropName: 'fileList',
       componentProps: {
         maxCount: 1,
@@ -415,7 +415,7 @@ const Login = () => {
     {
       label: handleType === 'add' ? '新增用户' : '修改用户',
       key: 'add',
-      children: <Form {...Layout} form={addForm}>
+      children: <Form labelAlign="right" {...Layout} form={addForm}>
         {
           addUserItems.map(item => <FormItem key={item.name} {...item} />)
         }

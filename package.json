@@ -78,6 +78,6 @@
     "react-grid-layout": "^1.3.4",
     "react-router": "^6.11.2",
     "react-router-dom": "6.x",
-    "remons-components": "^2.0.4"
+    "remons-components": "^2.0.5"
   }
 }

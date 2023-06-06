@@ -23,10 +23,10 @@ const recordUpload = async (
   event,
   { path: filepath, name, uid, type, uploadPath }
 ) => {
-  const copyPath = path.resolve(__dirname, `../${uploadPath}${name}`);
+  const copyPath = path.resolve(__dirname, `../${uploadPath}${uid}${name.split('.').slice(-1)}`);
   await fsExtra.copySync(filepath, copyPath);
   return {
-    url: `/${uploadPath}${name}`,
+    url: `/${uploadPath}${uid}${name.split('.').slice(-1)}`,
     status: 'done',
     name,
     uid,
