@@ -99,10 +99,10 @@ const View = forwardRef((props, ref) => {
 
   let Com = null
 
-  if (thumbUrl && uid) {
+  if (name && uid) {
     if (!obj[type]) {
       const id = `canvas${uid}_${eleId || ''}`;
-      const text = thumbUrl.split('.').length >= 2 ? thumbUrl.split('.').slice(-1)[0] : '';
+      const text = name.split('.').length >= 2 ? name.split('.').slice(-1)[0] : '';
       if (!text) {
         Com = () => transNode(
           <img style={{ width: '50px', height: '50px' }} src={errSvg} />
@@ -110,7 +110,7 @@ const View = forwardRef((props, ref) => {
       }
       setTimeout(() => {
         draw({
-          text: thumbUrl.split('.').slice(-1)[0],
+          text: name.split('.').slice(-1)[0],
           name,
           id,
         });

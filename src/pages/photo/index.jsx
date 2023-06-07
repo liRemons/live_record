@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 import style from './index.module.less';
 import FloatButton from '../../components/floatButton';
 import PhotoMain from '../../components/photoMain';
@@ -16,11 +16,14 @@ import {
   PlusOutlined
 } from '@ant-design/icons';
 const View = () => {
+  const photoMainRef = useRef(null);
+
   const btns1 = [
     {
       children: [
         {
           tooltip: '新增组件',
+          key: 'addCom',
           icon: <PlusOutlined />
         },
         {
@@ -41,10 +44,12 @@ const View = () => {
         
         {
           tooltip: '导出本页',
+          key: 'exportPage',
           icon: <FilePdfOutlined />,
         },
         {
           tooltip: '导出所有',
+          key: 'exportTotal',
           icon: <FileZipOutlined />,
         }
       ]
@@ -57,26 +62,32 @@ const View = () => {
       children: [
         {
           tooltip: '新增一页',
+          key: 'addPage',
           icon: <PlusCircleOutlined />
         },
         {
           tooltip: '上一页',
+          key: 'prevPage',
           icon: <CaretUpOutlined />,
         },
         {
           tooltip: '当前页',
+          key: 'nowPage',
           icon: 1
         },
         {
           tooltip: '下一页',
+          key: 'nextPage',
           icon: <CaretDownOutlined />,
         },
         {
           tooltip: '快速跳转',
+          key: 'toPage',
           icon: <ForwardOutlined />,
         },
         {
           tooltip: '删除本页',
+          key: 'delPage',
           icon: <DeleteOutlined />,
         },
         
@@ -85,17 +96,26 @@ const View = () => {
 
   ]
 
+  const handleClick = (data) => {
+    const handleMap = {
+      addCom: photoMainRef.current.addCom,
+      text: photoMainRef.current.addText
+    }
+    if(handleMap[data.key]) {
+      handleMap[data.key]()
+    }
+  }
 
   return <div className={style.container}>
     <div className={style.handle}>
-      <FloatButton components={btns1} shape="square" right={20} fixReference='top' position='absolute' />
+      <FloatButton onClick={handleClick} components={btns1} shape="square" right={20} fixReference='top' position='absolute' />
     </div>
 
     <div className={style.main}>
-      <PhotoMain />
+      <PhotoMain ref={photoMainRef} />
     </div>
     <div className={style.handle}>
-      <FloatButton components={btns2} shape="square" left={20} fixReference='top' position='absolute' />
+      <FloatButton onClick={handleClick} components={btns2} shape="square" left={20} fixReference='top' position='absolute' />
     </div>
   </div>
 }
