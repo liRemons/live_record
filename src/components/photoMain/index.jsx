@@ -379,7 +379,7 @@ const View = forwardRef((props, ref) => {
     })
     const findIndex = newLayout.findIndex(item => item.i === newItem.i);
     newLayout.splice(newLayout.length - 1, 1, ...newLayout.splice(findIndex, 1, newLayout[newLayout.length - 1]));
-    setLayout([...newLayout])
+    onLayoutChange(newLayout)
   }
 
   const onDragStop = (newLayout, oldItem, newItem) => {

@@ -83,7 +83,7 @@ const View = forwardRef((props, ref) => {
           </div>
           <div className={style.src}>{children}</div>
         </div>
-        <div className={style.filename}>{name}</div>
+        <div className={style.filename} title={name}>{name}</div>
       </div>
     );
   };
