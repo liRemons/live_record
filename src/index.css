@@ -33,24 +33,7 @@ html, body {
   background-image: var(--bg);
 }
 
-.app_container {
-  height: 100%;
-  width: 100%;
-}
 
-.header {
-  position: absolute;
-  top: 0;
-  z-index: 2;
-}
-
-.main {
-  padding-top: 80px;
-  padding-bottom: 20px;
-  width: 100%;
-  height: calc(100% - 100px);
-  overflow: auto;
-}
 
 .slide {
   overflow: auto;

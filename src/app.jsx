@@ -10,6 +10,7 @@ import { recordRendJson, storage, recordGetFilePath } from '../utils/renderer';
 import { parseContext } from '../utils';
 import Router from './router';
 import Header from './components/header';
+import style from './index.module.less';
 
 function App() {
   const navigate = useNavigate();
@@ -57,9 +58,9 @@ function App() {
 
   return <Menu>
     <ConfigProvider locale={locale} getPopupContainer={() => document.getElementById('container')}>
-      <div className='app_container'>
-        {!whitePath.includes(location.pathname) && <Header info={userInfo} className="header" />}
-        <div className="main">
+      <div className={style.app_container}>
+        {!whitePath.includes(location.pathname) && <Header info={userInfo} className={style.header} />}
+        <div className={style.main}>
           <Router />
         </div>
       </div>
