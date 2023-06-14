@@ -1,6 +1,6 @@
 {
   "life_notes_upload": "usr/${username}/life_notes/upload/${date}/",
-  "photo_album": "usr/${username}/photo_album/upload/${page}/",
+  "photo_album": "usr/${username}/photo_album/upload/${pageId}/",
   "config_background_path": "usr/${username}/background/",
   "user_config": "usr/config/"
 }

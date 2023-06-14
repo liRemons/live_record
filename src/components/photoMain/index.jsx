@@ -1,12 +1,14 @@
-import React, { Fragment, useEffect, useState, forwardRef, useImperativeHandle } from "react";
+import React, { Fragment, useEffect, useRef, useState, forwardRef, useImperativeHandle } from "react";
 import RGL, { WidthProvider } from "react-grid-layout";
 import { message, Popover, Segmented, InputNumber, ColorPicker, Input } from 'antd';
+import cloneDeep from "lodash.clonedeep";
 import { typeMap } from './const';
+import config from '../../../electron.config.json';
 import { v4 as uuid } from 'uuid';
 import classNames from "classnames";
-
-const { TextArea } = Input;
-
+import { parseContext } from '../../../utils';
+import Upload from '../upload';
+import { storage, recordGetFilePath, recordWriteJson } from '../../../utils/renderer';
 import {
   AlignCenterOutlined,
   AlignLeftOutlined,
@@ -28,18 +30,61 @@ import 'react-grid-layout/css/styles.css'
 import 'react-resizable/css/styles.css'
 import style from './index.module.less';
 
+
+const basicStyle = {
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  textAlign: 'center',
+  width: '100%',
+  height: '100%',
+  overflow: 'hidden',
+  fontStyle: 'inherit',
+  textDecoration: 'none',
+  fontWeight: 200,
+  color: '#000'
+
+}
+const { TextArea } = Input;
+
 const ReactGridLayout = WidthProvider(RGL);
 
 
 const View = forwardRef((props, ref) => {
   const [layout, setLayout] = useState([])
-  const [isDraggable, setIsDraggable] = useState(true)
+  const [isDraggable, setIsDraggable] = useState(true);
+  const [userInfo, setUserInfo] = useState({});
+  const layoutRef = useRef([]);
+  const userInfoRef = useRef({});
+
+  const getUserInfo = async () => {
+    const userInfo = await storage.getItem('loginInfo') || {};
+    setUserInfo(userInfo)
+    userInfoRef.current = userInfo;
+  }
 
   useEffect(() => {
+    getUserInfo();
+    const timer = setInterval(() => {
+      recordWriteJson({
+        uploadPath: parseContext(`${config.photo_album}data.json/`, { pageId: '1', username: userInfoRef.current.uid }),
+        data: {
+          pageId: '1',
+          data: layoutRef.current
+        }
+      })
+    }, 1000 * 60)
+    return () => {
+      clearInterval(timer)
+    }
   }, [])
 
+  useEffect(() => {
+    layoutRef.current = layout;
+  }, [layout]);
+
   const addCom = () => {
-    const copyLayout = JSON.parse(JSON.stringify(layout));
+    const copyLayout = cloneDeep(layout);
     copyLayout.push({
       i: uuid(),
       x: 0,
@@ -48,14 +93,15 @@ const View = forwardRef((props, ref) => {
       h: 4,
       minW: 2, minH: 2, resizeHandles: ['se', 'ne'],
       params: {
-        uiType: 'image'
+        uiType: 'image',
+        style: basicStyle,
       }
     });
     setLayout(copyLayout)
   }
 
   const addText = () => {
-    const copyLayout = JSON.parse(JSON.stringify(layout));
+    const copyLayout = cloneDeep(layout);
     copyLayout.push({
       i: uuid(),
       x: 0,
@@ -64,10 +110,11 @@ const View = forwardRef((props, ref) => {
       h: 1,
       minW: 2, minH: 1, resizeHandles: ['se', 'ne'],
       params: {
-        uiType: 'text'
+        uiType: 'text',
+        style: basicStyle
       }
     });
-    setLayout(copyLayout)
+    setLayout([...copyLayout])
   }
 
   useImperativeHandle(ref, () => ({
@@ -85,9 +132,43 @@ const View = forwardRef((props, ref) => {
     setLayout([...layout])
   }
 
-  const renderHandleNode = ({ dataSource }) => {
-    function renderSegmented({ options }) {
+  const changeUpload = (data, files) => {
+    layout.forEach(item => {
+      if (item.i === data.i) {
+        item.params.content = files[0]?.thumbUrl
+        item.params.fileList = files
+      }
+    });
+    setLayout([...layout])
+  }
+
+  const onChangeSegmented = (val, id, data) => {
+    let style = cloneDeep(data.params.style);
+    style = {
+      ...style,
+      [id]: val
+    }
+    if (id === 'borderRadius') {
+      ['borderTopLeftRadius', 'borderTopRightRadius', 'borderBottomRightRadius', 'borderBottomLeftRadius'].forEach(el => {
+        delete style[el]
+      })
+    }
+
+    layout.forEach(item => {
+      if (item.i === data.i) {
+        data.params.style = style
+      }
+    })
+    setLayout([...layout])
+  }
+
+  console.log(layout);
+
+  const renderHandleNode = ({ dataSource, data }) => {
+    function renderSegmented({ options, value: id }) {
       return <Segmented
+        onChange={(val) => onChangeSegmented(val, id, data)}
+        value={data.params.style[id] || null}
         options={options} />
     }
 
@@ -96,7 +177,7 @@ const View = forwardRef((props, ref) => {
     };
     return <Fragment>
       {
-        dataSource.filter(item => item.isShow !== false).map(item => <div key={item.value} className={style.handleItem}>
+        dataSource.filter(item => item.isShow !== false).map((item, index) => <div key={`${item.value}+${index}`} className={style.handleItem}>
           <span className={style.label}>{item.label}</span>
           {uiTypeMap[item.uiType]?.(item) || item.render(item)}
         </div>)
@@ -105,12 +186,13 @@ const View = forwardRef((props, ref) => {
   }
 
   const settingBorderRadius = (data, key) => {
-    const params = data.params;
+    const params = cloneDeep(data.params);
     if (params.style?.hasOwnProperty(key)) {
-      delete params.style?.[key];
+      delete params.style[key];
     } else {
       params.style = {
         ...(params.style || {}),
+        borderRadius: null,
         [key]: 0
       }
     }
@@ -131,13 +213,14 @@ const View = forwardRef((props, ref) => {
         value: 'textAlign',
         options: [
           {
+            value: 'left',
+            icon: <AlignLeftOutlined />
+          },
+          {
             value: 'center',
             icon: <AlignCenterOutlined />
           },
           {
-            value: 'left',
-            icon: <AlignLeftOutlined />
-          }, {
             value: 'right',
             icon: <AlignRightOutlined />
           }
@@ -146,17 +229,18 @@ const View = forwardRef((props, ref) => {
       {
         uiType: 'segmented',
         label: '垂直对齐',
-        value: 'vertical',
+        value: 'alignItems',
         options: [
           {
-            value: 'top',
+            value: 'start',
             icon: <VerticalAlignTopOutlined />
           },
           {
-            value: 'middle',
+            value: 'center',
             icon: <VerticalAlignMiddleOutlined />
-          }, {
-            value: 'bottom',
+          },
+          {
+            value: 'end',
             icon: <VerticalAlignBottomOutlined />
           }
         ]
@@ -192,7 +276,7 @@ const View = forwardRef((props, ref) => {
             icon: <ItalicOutlined />
           },
           {
-            value: 'none',
+            value: 'inherit',
             icon: <StopOutlined />
           }
         ]
@@ -200,28 +284,28 @@ const View = forwardRef((props, ref) => {
       {
         label: '字体大小',
         value: 'fontSize',
-        render: () => <InputNumber min={12} defaultValue={14} />
+        render: () => <InputNumber value={data.params.style.fontSize} onChange={(val) => onChangeSegmented(val, 'fontSize', data)} min={12} defaultValue={14} />
       },
       {
         label: '行高',
         value: 'lineHeight',
-        render: () => <InputNumber min={12} defaultValue={14} />
+        render: () => <InputNumber value={data.params.style.lineHeight} onChange={(val) => onChangeSegmented(val, 'lineHeight', data)} min={1} defaultValue={1.2} />
       },
       {
         label: '字体间距',
-        value: 'letterSpace',
-        render: () => <InputNumber min={0} defaultValue={2} />
+        value: 'letterSpacing',
+        render: () => <InputNumber value={data.params.style.letterSpacing} min={0} onChange={(val) => onChangeSegmented(val, 'letterSpacing', data)} defaultValue={2} />
       },
       {
         label: '字体颜色',
         value: 'color',
-        render: () => <ColorPicker />
+        render: () => <ColorPicker value={data.params.style.color} onChange={(color, val) => onChangeSegmented(val, 'color', data)} />
       },
     ];
     return <Popover placement='right' trigger='click' arrow={false} onOpenChange={onOpenChange} content={<div className={style.popover}>
-      <TextArea allowClear maxLength={100} showCount onChange={(e) => setContent(data, e)} />
+      <TextArea value={data.params.content} allowClear maxLength={100} showCount onChange={(e) => setContent(data, e)} />
       {
-        renderHandleNode({ dataSource })
+        renderHandleNode({ dataSource, data })
       }
     </div>}>
       <span className={style.icon}><SettingOutlined /></span>
@@ -232,70 +316,38 @@ const View = forwardRef((props, ref) => {
     const dataSource = [
       {
         uiType: 'segmented',
-        label: '水平对齐',
-        options: [
-          {
-            value: 'List',
-            icon: <AlignCenterOutlined />
-          },
-          {
-            value: 'Kanban',
-            icon: <AlignLeftOutlined />
-          }, {
-            value: 'a',
-            icon: <AlignRightOutlined />
-          }
-        ]
-      },
-      {
-        uiType: 'segmented',
-        label: '垂直对齐',
-        options: [
-          {
-            value: 'List',
-            icon: <VerticalAlignTopOutlined />
-          },
-          {
-            value: 'Kanban',
-            icon: <VerticalAlignMiddleOutlined />
-          }, {
-            value: 'a',
-            icon: <VerticalAlignBottomOutlined />
-          }
-        ]
-      },
-      {
-        uiType: 'segmented',
         label: '圆形',
+        value: 'borderRadius',
         options: [
           {
-            value: 'List',
+            value: '50%',
             icon: <CheckCircleOutlined />
           },
           {
-            value: 'none',
+            value: 'inherit',
             icon: <StopOutlined />
           }
         ]
       },
       {
         label: '圆角',
+        value: 'borderRadius',
         render: () => {
           const options = [
             {
-              value: 'border-top-left-radius',
+              value: 'borderTopLeftRadius',
               icon: <RadiusUpleftOutlined />
             },
             {
-              value: 'border-top-right-radius',
+              value: 'borderTopRightRadius',
               icon: <RadiusUprightOutlined />
             },
             {
-              value: 'border-bottom-right-radius',
+              value: 'borderBottomRightRadius',
               icon: <RadiusBottomrightOutlined />
             },
             {
-              value: 'border-bottom-left-radius',
+              value: 'borderBottomLeftRadius',
               icon: <RadiusBottomleftOutlined />
             },
           ];
@@ -315,31 +367,49 @@ const View = forwardRef((props, ref) => {
       },
       {
         label: <RadiusUpleftOutlined />,
-        render: () => <InputNumber />,
-        isShow: !!data.params.style?.hasOwnProperty('border-top-left-radius')
+        value: 'borderTopLeftRadius',
+        render: () => <InputNumber onChange={(val) => onChangeSegmented(val, 'borderTopLeftRadius', data)} />,
+        isShow: !!data.params.style?.hasOwnProperty('borderTopLeftRadius')
       },
       {
         label: <RadiusUprightOutlined />,
-        render: () => <InputNumber />,
-        isShow: !!data.params.style?.hasOwnProperty('border-top-right-radius')
+        value: 'borderTopRightRadius',
+        render: () => <InputNumber onChange={(val) => onChangeSegmented(val, 'borderTopRightRadius', data)} />,
+        isShow: !!data.params.style?.hasOwnProperty('borderTopRightRadius')
       },
       {
         label: <RadiusBottomrightOutlined />,
-        render: () => <InputNumber />,
-        isShow: !!data.params.style?.hasOwnProperty('border-bottom-right-radius')
+        value: 'borderBottomRightRadius',
+        render: () => <InputNumber onChange={(val) => onChangeSegmented(val, 'borderBottomRightRadius', data)} />,
+        isShow: !!data.params.style?.hasOwnProperty('borderBottomRightRadius')
       },
       {
         label: <RadiusBottomleftOutlined />,
-        render: () => <InputNumber />,
-        isShow: !!data.params.style?.hasOwnProperty('border-bottom-left-radius')
+        value: 'borderBottomLeftRadius',
+        render: () => <InputNumber onChange={(val) => onChangeSegmented(val, 'borderBottomLeftRadius', data)} />,
+        isShow: !!data.params.style?.hasOwnProperty('borderBottomLeftRadius')
       },
     ];
 
-    return <Popover placement='right' trigger='click' arrow={false} onOpenChange={onOpenChange} content={<div className={style.popover}>
-      {
-        renderHandleNode({ dataSource })
-      }
-    </div>}>
+    return <Popover
+      placement='right'
+      trigger='click'
+      arrow={false}
+      onOpenChange={onOpenChange}
+      content={<div className={style.popover}
+      >
+        <Upload
+          onChange={(files) => changeUpload(data, files)}
+          accept="image/*"
+          listType="picture-card"
+          maxCount={1}
+          fileList={data.params.fileList || []}
+          uploadPath={parseContext(config.photo_album, { pageId: '1', username: userInfo.uid })}
+        />
+        {
+          renderHandleNode({ dataSource, data })
+        }
+      </div>}>
       <span className={style.icon}><SettingOutlined /></span>
     </Popover>
   }
@@ -354,7 +424,7 @@ const View = forwardRef((props, ref) => {
     if (flag) {
       setLayout([])
       setTimeout(() => {
-        setLayout(JSON.parse(JSON.stringify(layout)))
+        setLayout(cloneDeep(layout))
       }, 0);
       message.warning('超出边框，已自动还原')
     } else {
@@ -426,7 +496,7 @@ const View = forwardRef((props, ref) => {
             }>
               <div className={style.content}>
                 {
-                  item.params.content
+                  typeMap(item.params)
                 }
               </div>
             </Popover>

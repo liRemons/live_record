@@ -9,39 +9,33 @@ import {
   FilePdfOutlined,
   ForwardOutlined,
   FormOutlined,
-  CloudUploadOutlined,
   FontSizeOutlined,
   FileZipOutlined,
   PlusCircleOutlined,
-  PlusOutlined
+  FileImageOutlined
 } from '@ant-design/icons';
 const View = () => {
   const photoMainRef = useRef(null);
 
   const btns1 = [
     {
+      key: 'left',
       children: [
         {
-          tooltip: '新增组件',
+          tooltip: '图片组件',
           key: 'addCom',
-          icon: <PlusOutlined />
+          icon: <FileImageOutlined />
         },
         {
-          tooltip: '上传图片',
-          key: 'upload',
-          icon: <CloudUploadOutlined />
+          tooltip: '文案组件',
+          key: 'text',
+          icon: <FontSizeOutlined />
         },
         {
           tooltip: '编辑',
           key: 'edit',
           icon: <FormOutlined />
         },
-        {
-          tooltip: '文案设置',
-          key: 'text',
-          icon: <FontSizeOutlined />
-        },
-        
         {
           tooltip: '导出本页',
           key: 'exportPage',
@@ -59,6 +53,7 @@ const View = () => {
 
   const btns2 = [
     {
+      key: 'right',
       children: [
         {
           tooltip: '新增一页',
@@ -110,7 +105,6 @@ const View = () => {
     <div className={style.handle}>
       <FloatButton onClick={handleClick} components={btns1} shape="square" right={20} fixReference='top' position='absolute' />
     </div>
-
     <div className={style.main}>
       <PhotoMain ref={photoMainRef} />
     </div>

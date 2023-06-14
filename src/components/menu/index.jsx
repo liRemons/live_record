@@ -135,7 +135,7 @@ export default function App({ children }) {
       </div>
       {createPortal(<Menu id={MENU_ID} animation='slide' theme='dark'>
         {
-          menu.map(item => <Item id={item.id} onClick={handleItemClick}>
+          menu.map(item => <Item key={item.id} id={item.id} onClick={handleItemClick}>
             {item.title}
           </Item>)
         }
