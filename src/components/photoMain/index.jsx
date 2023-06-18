@@ -1,6 +1,6 @@
 import React, { Fragment, useEffect, useRef, useState, forwardRef, useImperativeHandle } from "react";
 import RGL, { WidthProvider } from "react-grid-layout";
-import { message, Popover, Segmented, InputNumber, ColorPicker, Input } from 'antd';
+import { message, Popover, Segmented, InputNumber, ColorPicker, Input, Modal } from 'antd';
 import cloneDeep from "lodash.clonedeep";
 import { typeMap } from './const';
 import config from '../../../electron.config.json';
@@ -8,7 +8,7 @@ import { v4 as uuid } from 'uuid';
 import classNames from "classnames";
 import { parseContext } from '../../../utils';
 import Upload from '../upload';
-import { storage, recordGetFilePath, recordWriteJson } from '../../../utils/renderer';
+import { storage, recordGetFilePath, recordWriteJson, recordRendJson } from '../../../utils/renderer';
 import {
   AlignCenterOutlined,
   AlignLeftOutlined,
@@ -24,12 +24,17 @@ import {
   RadiusUpleftOutlined,
   RadiusUprightOutlined,
   CheckCircleOutlined,
-  StopOutlined
+  StopOutlined,
+  ColumnWidthOutlined,
+  CloseCircleOutlined,
+  ColumnHeightOutlined,
+  ExclamationCircleFilled
 } from '@ant-design/icons';
 import 'react-grid-layout/css/styles.css'
 import 'react-resizable/css/styles.css'
 import style from './index.module.less';
 
+const { confirm } = Modal;
 
 const basicStyle = {
   display: 'flex',
@@ -41,6 +46,7 @@ const basicStyle = {
   overflow: 'hidden',
   fontStyle: 'inherit',
   textDecoration: 'none',
+  writingMode: 'horizontal-tb',
   fontWeight: 200,
   color: '#000'
 
@@ -63,16 +69,29 @@ const View = forwardRef((props, ref) => {
     userInfoRef.current = userInfo;
   }
 
+  const getLayout = async () => {
+    if (userInfo.uid) {
+      const info = await recordRendJson({
+        uploadPath: parseContext(`${config.photo_album}`, { pageId: '1', username: userInfoRef.current.uid })
+      });
+      setLayout(info?.data || [])
+    }
+  }
+
+  const save = () => {
+    recordWriteJson({
+      uploadPath: parseContext(`${config.photo_album}`, { pageId: '1', username: userInfoRef.current.uid }),
+      data: {
+        pageId: '1',
+        data: layoutRef.current
+      }
+    })
+  }
+
   useEffect(() => {
     getUserInfo();
     const timer = setInterval(() => {
-      recordWriteJson({
-        uploadPath: parseContext(`${config.photo_album}data.json/`, { pageId: '1', username: userInfoRef.current.uid }),
-        data: {
-          pageId: '1',
-          data: layoutRef.current
-        }
-      })
+      save()
     }, 1000 * 60)
     return () => {
       clearInterval(timer)
@@ -82,6 +101,10 @@ const View = forwardRef((props, ref) => {
   useEffect(() => {
     layoutRef.current = layout;
   }, [layout]);
+
+  useEffect(() => {
+    getLayout();
+  }, [userInfo])
 
   const addCom = () => {
     const copyLayout = cloneDeep(layout);
@@ -119,7 +142,8 @@ const View = forwardRef((props, ref) => {
 
   useImperativeHandle(ref, () => ({
     addCom,
-    addText
+    addText,
+    save
   }))
 
 
@@ -162,8 +186,6 @@ const View = forwardRef((props, ref) => {
     setLayout([...layout])
   }
 
-  console.log(layout);
-
   const renderHandleNode = ({ dataSource, data }) => {
     function renderSegmented({ options, value: id }) {
       return <Segmented
@@ -177,7 +199,7 @@ const View = forwardRef((props, ref) => {
     };
     return <Fragment>
       {
-        dataSource.filter(item => item.isShow !== false).map((item, index) => <div key={`${item.value}+${index}`} className={style.handleItem}>
+        dataSource.filter(item => item.isShow !== false).map((item, index) => <div key={`${item.value} + ${index}`} className={style.handleItem}>
           <span className={style.label}>{item.label}</span>
           {uiTypeMap[item.uiType]?.(item) || item.render(item)}
         </div>)
@@ -242,6 +264,21 @@ const View = forwardRef((props, ref) => {
           {
             value: 'end',
             icon: <VerticalAlignBottomOutlined />
+          }
+        ]
+      },
+      {
+        uiType: 'segmented',
+        label: '字体方向',
+        value: 'writingMode',
+        options: [
+          {
+            value: 'horizontal-tb',
+            icon: <ColumnWidthOutlined />
+          },
+          {
+            value: 'vertical-rl',
+            icon: <ColumnHeightOutlined />
           }
         ]
       },
@@ -368,25 +405,25 @@ const View = forwardRef((props, ref) => {
       {
         label: <RadiusUpleftOutlined />,
         value: 'borderTopLeftRadius',
-        render: () => <InputNumber onChange={(val) => onChangeSegmented(val, 'borderTopLeftRadius', data)} />,
+        render: () => <InputNumber value={data.params.style.borderTopLeftRadius} onChange={(val) => onChangeSegmented(val, 'borderTopLeftRadius', data)} />,
         isShow: !!data.params.style?.hasOwnProperty('borderTopLeftRadius')
       },
       {
         label: <RadiusUprightOutlined />,
         value: 'borderTopRightRadius',
-        render: () => <InputNumber onChange={(val) => onChangeSegmented(val, 'borderTopRightRadius', data)} />,
+        render: () => <InputNumber value={data.params.style.borderTopRightRadius} onChange={(val) => onChangeSegmented(val, 'borderTopRightRadius', data)} />,
         isShow: !!data.params.style?.hasOwnProperty('borderTopRightRadius')
       },
       {
         label: <RadiusBottomrightOutlined />,
         value: 'borderBottomRightRadius',
-        render: () => <InputNumber onChange={(val) => onChangeSegmented(val, 'borderBottomRightRadius', data)} />,
+        render: () => <InputNumber value={data.params.style.borderBottomRightRadius} onChange={(val) => onChangeSegmented(val, 'borderBottomRightRadius', data)} />,
         isShow: !!data.params.style?.hasOwnProperty('borderBottomRightRadius')
       },
       {
         label: <RadiusBottomleftOutlined />,
         value: 'borderBottomLeftRadius',
-        render: () => <InputNumber onChange={(val) => onChangeSegmented(val, 'borderBottomLeftRadius', data)} />,
+        render: () => <InputNumber value={data.params.style.borderBottomLeftRadius} onChange={(val) => onChangeSegmented(val, 'borderBottomLeftRadius', data)} />,
         isShow: !!data.params.style?.hasOwnProperty('borderBottomLeftRadius')
       },
     ];
@@ -471,12 +508,25 @@ const View = forwardRef((props, ref) => {
     }
   }
 
+  const del = (data) => {
+    confirm({
+      title: '确定要删除吗',
+      icon: <ExclamationCircleFilled />,
+      content: '删除后不可恢复！！！',
+      onOk: () => {
+        const index = layout.findIndex(item => item.i === data.i);
+        layout.splice(index, 1);
+        setLayout([...layout])
+      },
+      onCancel() { },
+    });
+  }
+
   return (
     <ReactGridLayout
       style={{ height: '100%' }}
-      isResizable
-      isDraggable={isDraggable}
-      className="layout"
+      isResizable={props.edit}
+      isDraggable={isDraggable && props.edit}
       layout={layout}
       cols={24}
       rowHeight={40}
@@ -486,20 +536,20 @@ const View = forwardRef((props, ref) => {
       allowOverlap
       onDragStop={onDragStop}
       onResizeStop={onResizeStop}
-    // onLayoutChange={onLayoutChange}
     >
       {
         layout.map(item => {
-          return <div key={item.i} data-grid={item}>
-            <Popover placement='right' arrow={false} content={
-              handleUiTypeMap()[item.params.uiType](item)
-            }>
-              <div className={style.content}>
-                {
-                  typeMap(item.params)
-                }
-              </div>
-            </Popover>
+          const content = typeMap(item.params);
+          return <div className={style.item} key={item.i} data-grid={item}>
+            {props.edit && <span className={style.close} onClick={() => del(item)}><CloseCircleOutlined /></span>}
+            {
+              props.edit ? <Popover placement='right' arrow={false} content={
+                handleUiTypeMap()[item.params.uiType](item)
+              }>
+                <div className={style.content}> {content}</div>
+              </Popover> : content
+            }
+
           </div>
         })
       }

@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import style from './index.module.less';
 import FloatButton from '../../components/floatButton';
 import PhotoMain from '../../components/photoMain';
@@ -12,10 +12,12 @@ import {
   FontSizeOutlined,
   FileZipOutlined,
   PlusCircleOutlined,
-  FileImageOutlined
+  FileImageOutlined,
+  SaveOutlined
 } from '@ant-design/icons';
 const View = () => {
   const photoMainRef = useRef(null);
+  const [edit, setEdit] = useState(false);
 
   const btns1 = [
     {
@@ -24,17 +26,26 @@ const View = () => {
         {
           tooltip: '图片组件',
           key: 'addCom',
+          isShow: edit,
           icon: <FileImageOutlined />
         },
         {
           tooltip: '文案组件',
           key: 'text',
+          isShow: edit,
           icon: <FontSizeOutlined />
         },
         {
           tooltip: '编辑',
           key: 'edit',
+          isShow: !edit,
           icon: <FormOutlined />
+        },
+        {
+          tooltip: '保存',
+          key: 'save',
+          isShow: edit,
+          icon: <SaveOutlined />
         },
         {
           tooltip: '导出本页',
@@ -46,7 +57,7 @@ const View = () => {
           key: 'exportTotal',
           icon: <FileZipOutlined />,
         }
-      ]
+      ].filter(item => item.isShow !== false)
     }
 
   ];
@@ -85,28 +96,34 @@ const View = () => {
           key: 'delPage',
           icon: <DeleteOutlined />,
         },
-        
+
       ]
     }
-
   ]
 
   const handleClick = (data) => {
     const handleMap = {
       addCom: photoMainRef.current.addCom,
-      text: photoMainRef.current.addText
+      text: photoMainRef.current.addText,
+      edit: () => setEdit(true),
+      save: () => {
+        setEdit(false);
+        photoMainRef.current.save();
+      }
     }
-    if(handleMap[data.key]) {
+    if (handleMap[data.key]) {
       handleMap[data.key]()
     }
   }
+
+
 
   return <div className={style.container}>
     <div className={style.handle}>
       <FloatButton onClick={handleClick} components={btns1} shape="square" right={20} fixReference='top' position='absolute' />
     </div>
     <div className={style.main}>
-      <PhotoMain ref={photoMainRef} />
+      <PhotoMain edit={edit} ref={photoMainRef} />
     </div>
     <div className={style.handle}>
       <FloatButton onClick={handleClick} components={btns2} shape="square" left={20} fixReference='top' position='absolute' />
