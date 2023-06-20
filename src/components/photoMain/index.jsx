@@ -8,7 +8,7 @@ import { v4 as uuid } from 'uuid';
 import classNames from "classnames";
 import { parseContext } from '../../../utils';
 import Upload from '../upload';
-import { storage, recordGetFilePath, recordWriteJson, recordRendJson } from '../../../utils/renderer';
+import { recordGetFilePath, recordWriteJson, recordRendJson } from '../../../utils/renderer';
 import {
   AlignCenterOutlined,
   AlignLeftOutlined,
@@ -26,7 +26,7 @@ import {
   CheckCircleOutlined,
   StopOutlined,
   ColumnWidthOutlined,
-  CloseCircleOutlined,
+  MinusCircleFilled,
   ColumnHeightOutlined,
   ExclamationCircleFilled
 } from '@ant-design/icons';
@@ -48,7 +48,8 @@ const basicStyle = {
   textDecoration: 'none',
   writingMode: 'horizontal-tb',
   fontWeight: 200,
-  color: '#000'
+  color: '#000',
+  objectFit: 'cover'
 
 }
 const { TextArea } = Input;
@@ -57,22 +58,24 @@ const ReactGridLayout = WidthProvider(RGL);
 
 
 const View = forwardRef((props, ref) => {
-  const [layout, setLayout] = useState([])
+  const { userInfo, nowPage } = props;
+  const [layout, setLayout] = useState([]);
   const [isDraggable, setIsDraggable] = useState(true);
-  const [userInfo, setUserInfo] = useState({});
   const layoutRef = useRef([]);
-  const userInfoRef = useRef({});
-
-  const getUserInfo = async () => {
-    const userInfo = await storage.getItem('loginInfo') || {};
-    setUserInfo(userInfo)
-    userInfoRef.current = userInfo;
-  }
 
   const getLayout = async () => {
     if (userInfo.uid) {
       const info = await recordRendJson({
-        uploadPath: parseContext(`${config.photo_album}`, { pageId: '1', username: userInfoRef.current.uid })
+        uploadPath: parseContext(`${config.photo_album}`, { pageId: nowPage.pageId, username: userInfo.uid })
+      });
+      (info?.data || []).forEach(item => {
+        const { params } = item;
+        if (params.type === 'image' && params.fileList) {
+          params.content = recordGetFilePath(params.fileList[0].url)
+          params.fileList.forEach(el => {
+            el.thumbUrl = recordGetFilePath(el.url);
+          })
+        }
       });
       setLayout(info?.data || [])
     }
@@ -80,22 +83,21 @@ const View = forwardRef((props, ref) => {
 
   const save = () => {
     recordWriteJson({
-      uploadPath: parseContext(`${config.photo_album}`, { pageId: '1', username: userInfoRef.current.uid }),
+      uploadPath: parseContext(`${config.photo_album}`, { pageId: nowPage.pageId, username: userInfo.uid }),
       data: {
-        pageId: '1',
+        pageId: nowPage.pageId,
         data: layoutRef.current
       }
     })
   }
 
   useEffect(() => {
-    getUserInfo();
     const timer = setInterval(() => {
       save()
     }, 1000 * 60)
     return () => {
       clearInterval(timer)
-    }
+    };
   }, [])
 
   useEffect(() => {
@@ -103,8 +105,10 @@ const View = forwardRef((props, ref) => {
   }, [layout]);
 
   useEffect(() => {
-    getLayout();
-  }, [userInfo])
+    if(userInfo && nowPage) {
+      getLayout();
+    }
+  }, [userInfo, nowPage])
 
   const addCom = () => {
     const copyLayout = cloneDeep(layout);
@@ -143,7 +147,7 @@ const View = forwardRef((props, ref) => {
   useImperativeHandle(ref, () => ({
     addCom,
     addText,
-    save
+    save,
   }))
 
 
@@ -153,8 +157,8 @@ const View = forwardRef((props, ref) => {
         item.params.content = e.target.value
       }
     });
-    setLayout([...layout])
-  }
+    setLayout([...layout]);
+  };
 
   const changeUpload = (data, files) => {
     layout.forEach(item => {
@@ -164,7 +168,7 @@ const View = forwardRef((props, ref) => {
       }
     });
     setLayout([...layout])
-  }
+  };
 
   const onChangeSegmented = (val, id, data) => {
     let style = cloneDeep(data.params.style);
@@ -403,6 +407,21 @@ const View = forwardRef((props, ref) => {
         }
       },
       {
+        label: '图片适应',
+        value: 'objectFit',
+        uiType: 'segmented',
+        options: [
+          'cover',
+          'contain',
+          'fill',
+          'scale-down',
+          {
+            value: 'none',
+            icon: <StopOutlined />
+          }
+        ],
+      },
+      {
         label: <RadiusUpleftOutlined />,
         value: 'borderTopLeftRadius',
         render: () => <InputNumber value={data.params.style.borderTopLeftRadius} onChange={(val) => onChangeSegmented(val, 'borderTopLeftRadius', data)} />,
@@ -441,7 +460,7 @@ const View = forwardRef((props, ref) => {
           listType="picture-card"
           maxCount={1}
           fileList={data.params.fileList || []}
-          uploadPath={parseContext(config.photo_album, { pageId: '1', username: userInfo.uid })}
+          uploadPath={parseContext(config.photo_album, { pageId: nowPage.pageId, username: userInfo.uid })}
         />
         {
           renderHandleNode({ dataSource, data })
@@ -541,7 +560,7 @@ const View = forwardRef((props, ref) => {
         layout.map(item => {
           const content = typeMap(item.params);
           return <div className={style.item} key={item.i} data-grid={item}>
-            {props.edit && <span className={style.close} onClick={() => del(item)}><CloseCircleOutlined /></span>}
+            {props.edit && <span className={style.close} onClick={() => del(item)}><MinusCircleFilled /></span>}
             {
               props.edit ? <Popover placement='right' arrow={false} content={
                 handleUiTypeMap()[item.params.uiType](item)
