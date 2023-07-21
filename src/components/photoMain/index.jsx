@@ -231,6 +231,71 @@ const View = forwardRef((props, ref) => {
     setLayout([...layout])
   }
 
+  const renderBorderRadius = (data) => {
+    return [
+      {
+        label: '圆角',
+        value: 'borderRadius',
+        render: () => {
+          const options = [
+            {
+              value: 'borderTopLeftRadius',
+              icon: <RadiusUpleftOutlined />
+            },
+            {
+              value: 'borderTopRightRadius',
+              icon: <RadiusUprightOutlined />
+            },
+            {
+              value: 'borderBottomRightRadius',
+              icon: <RadiusBottomrightOutlined />
+            },
+            {
+              value: 'borderBottomLeftRadius',
+              icon: <RadiusBottomleftOutlined />
+            },
+          ];
+
+          return <div className={style.segmentedBg}>
+            {
+              options.map(item => <span
+                key={item.value}
+                onClick={() => settingBorderRadius(data, item.value)}
+                className={classNames(style.icon, data.params.style?.hasOwnProperty(item.value) ? style.active : '')}
+              >
+                {item.icon}
+              </span>)
+            }
+          </div>
+        }
+      },
+      {
+        label: <RadiusUpleftOutlined />,
+        value: 'borderTopLeftRadius',
+        render: () => <InputNumber value={data.params.style.borderTopLeftRadius} onChange={(val) => onChangeSegmented(val, 'borderTopLeftRadius', data)} />,
+        isShow: !!data.params.style?.hasOwnProperty('borderTopLeftRadius')
+      },
+      {
+        label: <RadiusUprightOutlined />,
+        value: 'borderTopRightRadius',
+        render: () => <InputNumber value={data.params.style.borderTopRightRadius} onChange={(val) => onChangeSegmented(val, 'borderTopRightRadius', data)} />,
+        isShow: !!data.params.style?.hasOwnProperty('borderTopRightRadius')
+      },
+      {
+        label: <RadiusBottomrightOutlined />,
+        value: 'borderBottomRightRadius',
+        render: () => <InputNumber value={data.params.style.borderBottomRightRadius} onChange={(val) => onChangeSegmented(val, 'borderBottomRightRadius', data)} />,
+        isShow: !!data.params.style?.hasOwnProperty('borderBottomRightRadius')
+      },
+      {
+        label: <RadiusBottomleftOutlined />,
+        value: 'borderBottomLeftRadius',
+        render: () => <InputNumber value={data.params.style.borderBottomLeftRadius} onChange={(val) => onChangeSegmented(val, 'borderBottomLeftRadius', data)} />,
+        isShow: !!data.params.style?.hasOwnProperty('borderBottomLeftRadius')
+      },
+    ]
+  }
+
   const renderTextPopver = (data) => {
     const dataSource = [
       {
@@ -342,6 +407,12 @@ const View = forwardRef((props, ref) => {
         value: 'color',
         render: () => <ColorPicker value={data.params.style.color} onChange={(color, val) => onChangeSegmented(val, 'color', data)} />
       },
+      {
+        label: '背景颜色',
+        value: 'backgroundColor',
+        render: () => <ColorPicker value={data.params.style.backgroundColor} onChange={(color, val) => onChangeSegmented(val, 'backgroundColor', data)} />
+      },
+      ...renderBorderRadius(data)
     ];
     return <Popover placement='right' trigger='click' arrow={false} onOpenChange={onOpenChange} content={<div className={style.popover}>
       <TextArea value={data.params.content} allowClear maxLength={100} showCount onChange={(e) => setContent(data, e)} />
@@ -371,42 +442,6 @@ const View = forwardRef((props, ref) => {
         ]
       },
       {
-        label: '圆角',
-        value: 'borderRadius',
-        render: () => {
-          const options = [
-            {
-              value: 'borderTopLeftRadius',
-              icon: <RadiusUpleftOutlined />
-            },
-            {
-              value: 'borderTopRightRadius',
-              icon: <RadiusUprightOutlined />
-            },
-            {
-              value: 'borderBottomRightRadius',
-              icon: <RadiusBottomrightOutlined />
-            },
-            {
-              value: 'borderBottomLeftRadius',
-              icon: <RadiusBottomleftOutlined />
-            },
-          ];
-
-          return <div className={style.segmentedBg}>
-            {
-              options.map(item => <span
-                key={item.value}
-                onClick={() => settingBorderRadius(data, item.value)}
-                className={classNames(style.icon, data.params.style?.hasOwnProperty(item.value) ? style.active : '')}
-              >
-                {item.icon}
-              </span>)
-            }
-          </div>
-        }
-      },
-      {
         label: '图片适应',
         value: 'objectFit',
         uiType: 'segmented',
@@ -421,30 +456,7 @@ const View = forwardRef((props, ref) => {
           }
         ],
       },
-      {
-        label: <RadiusUpleftOutlined />,
-        value: 'borderTopLeftRadius',
-        render: () => <InputNumber value={data.params.style.borderTopLeftRadius} onChange={(val) => onChangeSegmented(val, 'borderTopLeftRadius', data)} />,
-        isShow: !!data.params.style?.hasOwnProperty('borderTopLeftRadius')
-      },
-      {
-        label: <RadiusUprightOutlined />,
-        value: 'borderTopRightRadius',
-        render: () => <InputNumber value={data.params.style.borderTopRightRadius} onChange={(val) => onChangeSegmented(val, 'borderTopRightRadius', data)} />,
-        isShow: !!data.params.style?.hasOwnProperty('borderTopRightRadius')
-      },
-      {
-        label: <RadiusBottomrightOutlined />,
-        value: 'borderBottomRightRadius',
-        render: () => <InputNumber value={data.params.style.borderBottomRightRadius} onChange={(val) => onChangeSegmented(val, 'borderBottomRightRadius', data)} />,
-        isShow: !!data.params.style?.hasOwnProperty('borderBottomRightRadius')
-      },
-      {
-        label: <RadiusBottomleftOutlined />,
-        value: 'borderBottomLeftRadius',
-        render: () => <InputNumber value={data.params.style.borderBottomLeftRadius} onChange={(val) => onChangeSegmented(val, 'borderBottomLeftRadius', data)} />,
-        isShow: !!data.params.style?.hasOwnProperty('borderBottomLeftRadius')
-      },
+      ...renderBorderRadius(data)
     ];
 
     return <Popover
